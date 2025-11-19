@@ -2,6 +2,14 @@
 
 An intelligent n8n workflow that automatically retrieves the latest research papers from arXiv, uses a local LLM to generate comprehensive summaries, and delivers digestible insights directly to your Slack channel.
 
+## 🎨 Screenshots
+
+### English Version
+![Daily arXiv Workflow - English](assets/daily-arxiv-en.jpg)
+
+### Chinese Version
+![Daily arXiv Workflow - Chinese](assets/daily-arxiv-zh.jpg)
+
 ## 🌟 Why This Workflow is Useful
 
 Staying up-to-date with the latest research papers can be overwhelming. With thousands of papers published daily on arXiv, manually reading and understanding each relevant paper is time-consuming and impractical. This workflow solves that problem by:
@@ -120,12 +128,6 @@ The workflow follows this process:
    - Cleans the text (removes references, acknowledgments, etc.)
    - Generates comprehensive summary using local LLM
    - Sends formatted summary to Slack
-
-## 🎨 Screenshots
-
-Workflow visualizations are available in the `assets/` folder:
-- `daily-arxiv-en.jpg` - English version
-- `daily-arxiv-zh.jpg` - Chinese version
 
 ## ⚙️ Customization
 
