@@ -1,0 +1,515 @@
+{
+  "name": "Arxiv",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        584
+      ],
+      "id": "df78f9d0-3611-4ec3-aa0f-abc6b7fe47da",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "feed.entry",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        608,
+        512
+      ],
+      "id": "21ce1244-8d40-45fa-bc47-c1b977202440",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "=https://export.arxiv.org/api/query?search_query={{ $json.categories }}&sortBy=submittedDate&sortOrder=descending&start=0&max_results=10",
+        "options": {}
+      },
+      "id": "b23c9257-76a4-4272-be8e-085867fe9941",
+      "name": "📡 Query arXiv API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        160,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        384,
+        512
+      ],
+      "id": "c7fd378d-1e41-497e-a2c6-dc17c69d5830",
+      "name": "XML to Json"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "id"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": {{ JSON.stringify($json.output[0].content[0].text + \"\\n-------------------------------------------------------------------------\") }} \n\t\t}\n\t]\n}",
+        "text": "={{ $json.output[0].content[0].text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2400,
+        584
+      ],
+      "id": "b37dc26e-6bbf-4da8-a2b7-88e355238529",
+      "name": "Send a message",
+      "webhookId": "",
+      "notesInFlow": false,
+      "credentials": {
+        "slackApi": {
+          "id": "",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": "={{ $prevNode.name=== \"get_pdf_link\"}}"
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        584
+      ],
+      "id": "19a2fb7c-1758-4b0c-83a0-93024f0d6830",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:1234/v1/responses",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": [\n    {\n      \"type\": \"message\",\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.summarize_prompt + $json.cleaned_text+ \"\\n paper_link: \"+ $('Fetch Paper').item.json.pdf_link) }}\n  }\n  ],\n  \"model\": \"qwen/qwen3-vl-8b\",\n  \"stream\": false,\n  \"text\": {}\n} ",
+        "options": {
+          "timeout": 3600000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2176,
+        512
+      ],
+      "id": "e2eccf7a-6ddf-4e65-a180-15764e664e17",
+      "name": "Summarize Paper"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "categories",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        584
+      ],
+      "id": "b1ba761e-a994-4425-94a3-e67b304b7327",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n\"categories\": [\n        \"cat:cs.AI\", \"cat:cs.LG\",\"cat:cs.CV\",\"cat:cs.CL\"\n      ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        584
+      ],
+      "id": "13921e67-fd43-4ac7-82cd-780148b5b851",
+      "name": "CS Categories"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -64,
+        584
+      ],
+      "id": "55f4a4cb-5d20-49a6-b9e6-42d89dd11f27",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c23c2356-32fe-4b84-9469-8d29e29b549a",
+              "name": "pdf_link",
+              "value": "={{   ($json.link && Array.isArray($json.link) &&    $json.link.find(l => l.type === \"application/pdf\")?.href)   }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        512
+      ],
+      "id": "7a322d8f-ea31-4c02-b2af-5f2f2457da6d",
+      "name": "get_pdf_link"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function Item Node: Clean Academic Paper Text\n// Input: $json.text (raw text from PDF)\n// Output: { cleaned_text: \"...\" }\n\nconst rawText = $input.first().json.text || '';\n\nif (!rawText || typeof rawText !== 'string') {\n  return { json: { cleaned_text: '', warning: 'Input text is empty or invalid' } };\n}\n\nlet text = rawText;\n\n// 5. Remove reference section and everything after\nconst refPatterns = [\n  /^references$/im,\n  /^bibliography$/im,\n  /^参考文献$/im,\n  /^acknowledgement/i,\n  /^acknowledgments/i,\n  /^致谢$/i,\n  /^appendix/i,\n  /^supplementary material/i,\n  /^ethics statement/i\n];\n\nfor (const pattern of refPatterns) {\n  const match = text.match(pattern);\n  if (match) {\n    const idx = match.index;\n    text = text.substring(0, idx).trim();\n    break;\n  }\n}\n\nreturn {\n  json: {\n    cleaned_text: text,\n    original_length: rawText.length,\n    cleaned_length: text.length,\n    reduction_ratio: ((1 - text.length / rawText.length) * 100).toFixed(1) + '%'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        512
+      ],
+      "id": "c8d859ad-6ca2-46d9-bba4-4dd61606c184",
+      "name": "Clean Paper"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        512
+      ],
+      "id": "f7a6f0cd-a983-4785-aec8-7f2130b372c9",
+      "name": "Read Paper Content"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.pdf_link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1280,
+        512
+      ],
+      "id": "93f848ae-6437-471c-b4f3-a94e7ffe859e",
+      "name": "Fetch Paper"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db8ab0ed-dcf4-4192-8bbf-56ce9804bcb8",
+              "name": "cleaned_text",
+              "value": "={{ $json.cleaned_text }}",
+              "type": "string"
+            },
+            {
+              "id": "843ff555-0c2e-43d4-87a5-ecd43d376256",
+              "name": "clean_prompt",
+              "value": "你是一位专业的学术文本清洗工程师，任务是对一篇科研论文进行**无损去噪**：移除一切非核心内容，但**完整保留所有实质性论述**（包括技术细节、实验设计、分析过程）。  请严格执行以下清洗规则：  ### 🔍 必须删除的内容（彻底移除，不留痕迹） - 所有参考文献列表（从 \"References\"、\"Bibliography\"、\"参考文献\" 等标题开始至文末） - 致谢（\"Acknowledgements\"、\"致谢\"） - 伦理声明、数据可用性声明 - 附录（\"Appendix\"、\"Supplementary Material\"、\"附录\" 及其后全部内容） - 作者信息、单位、邮箱、基金编号 - 页眉、页脚、页码、会议名称/Logo - LaTeX 命令：`\\cite{...}`、`\\ref{...}`、`\\label{...}`、`\\footnote{...}`（仅移除命令，保留其包裹的文本语义） - 图/表编号（如 \"Figure 1:\"、\"Table 2\"），但**保留图/表下方的说明文字与结论**  ### ✅ 必须保留的内容（即使冗长） - 标题、摘要 - 引言（含问题定义、相关工作批判性分析） - 方法（完整算法描述、公式解释、架构图文字说明） - 实验设置（数据集、基线、指标、超参） - 结果分析（表格数据解读、失败案例讨论） - 结论与未来工作 - 任何包含技术洞见、设计权衡、局限性反思的段落  ### 📝 输出要求 - 语言：保持原文语言（中/英），不翻译、不改写   - 格式：**纯文本**，段落分明，用空行分隔逻辑块   - 清洁度：无残留 LaTeX、无孤立编号、无“[1]”类引用标记   - 顺序：严格保持原文结构顺序（引言 → 方法 → 实验 → 结论）   - ❌ 禁止：总结、提炼、删减实质性内容、添加解释   - ✅ 示例：     原文：\"As shown in Fig.~\\\\ref{fig:arch}, our model \\\\cite{vaswani2017attention} has three stages...\"     清洗后：\"As shown in the architecture figure, our model has three stages...\"  ——   待处理论文全文如下：   全文：",
+              "type": "string"
+            },
+            {
+              "id": "6e967cc7-1102-48c4-93b0-5cc0cc18081f",
+              "name": "summarize_prompt",
+              "value": "=# 论文深度归纳任务说明（Markdown版）\n\n你是一位顶尖的 AI 领域科学家兼科学传播者。请**精读以下清洗后的论文全文**，并完成一次深度归纳。目标不是复述，而是**帮助读者建立心智模型**——让他们理解：问题为何难？作者如何想到这个解法？它为何有效？边界在哪？\n\n> 在我随后提供论文（PDF 或纯文本）后，请严格按照下面格式给出精要、准确、可引用的总结。**不要生成任何代码。**\n\n---\n\n## 输出格式（必须严格遵守）\n\n### 题目\n\n* 原英文题目\n* 中文翻译\n\n### 论文链接\n* 论文链接\n\n### 作者\n\n* 第一作者信息（姓名 / 所属机构）\n\n### 关键要点（要点化，6–10 条）\n\n* 每条 12–20 字左右\n* 覆盖：问题、方法、主要结果、影响\n\n### 一句话 TL;DR（1–2 行）\n\n* 面向非专业听众，用最简单语言总结问题定义, 论文核心贡献与结论（可理解性优先）\n\n### 三句话电梯陈述（Elevator pitch）\n\n* 面向科研/工程决策者，说明“这篇论文为什么重要 / 值不值得关注”\n\n### 技术概述（精炼）\n\n#### 问题定义（1–2 段）\n\n* 清晰界定研究问题与挑战\n\n#### 提出的方法/模型/算法（1 段，强调新颖点）\n\n* 简要描述方法核心与创新之处\n\n#### 关键假设与理论基础（短列点）\n\n* 列出重要假设与依赖的理论结果\n\n### 实验与结果（精确）\n\n#### 用到的数据集、评价指标和基线（列出名称）\n\n* 明确列出所有数据集、主要评价指标与对比基线\n\n#### 主要结果\n\n* 提供关键数值（例如准确率、误差、提升百分比等）\n* 标注这些数值来自论文的哪个表或图（例如“表2”或“图3”）\n* 若论文没有给出某些常见对比或置信区间，请指出缺失项\n\n### 优点与创新点（列点）\n\n* 至少 3 点，写明为何比现有工作更好或不同\n\n### 局限性与风险（列点）\n\n* 至少 3 点，包括：方法局限、实验局限、可重复性、推广性、伦理/社会风险（若相关）\n\n### 可复现性检查清单（短）\n\n* 给出 6 个易检验项，例如：\n\n  1. 数据是否公开\n  2. 训练细节是否完整\n  3. 超参说明\n  4. 随机种子\n  5. 代码/模型权重是否公开\n  6. 所需计算资源\n\n### 后续工作建议（可操作，3–5 条）\n\n* 包括改进实验、消融项、应用场景或理论扩展\n\n### 一句话引用建议（格式：`作者 et al., 年`）\n\n* 用于论文正文简短引用\n\n### 主题关键词（5–10 个）\n\n* 便于索引和检索\n\n### 重要图/表快速导读（可选）\n\n* 列出论文中最关键的 2–3 个图表，并用 1–2 句说明每个图表展示内容及其对结论的意义\n\n### 未来应用场景\n* 讨论未来此研究成果的应用场景和潜力\n\n### 最终结论与推荐（1 段）\n\n* 明确建议（例如：“值得深入阅读 / 可作为参考 / 仅作背景阅读 / 不推荐引用”）\n* 给出 1–2 条理由支持该建议\n\n---\n\n## 风格与长度要求\n\n* 语言：中文（专业但简洁）\n* 避免长篇大论，把握要点\n* 总长度控制在 **500–900 字**（除非用户另有要求）\n* 引用论文内部定位时请使用 **页面/图表编号**（例如“见第4页，图2”）\n* **绝对不要生成或附带任何代码、伪代码或可执行命令**\n\n---\n\n## 额外注意事项\n\n* 若论文包含数学证明或关键公式：**只用一句话概括其结论和用途**，不要逐步推导。\n* 若论文引用了外部关键资源（公开数据集、预训练模型、重要工具）：请列出资源名称并说明是否公开可用。\n* 若论文是综述/ survey：把“方法/实验”部分改为“覆盖主题与比较框架”，并提供对比表格（要点形式）。\n* 若论文质量明显不好（例如实验设计严重缺陷或结果无法支撑结论）：在“局限性”中清楚标注，并在“最终结论”中给出明确负面建议。\n\n---\n\n请将整篇论文（PDF 或纯文本）粘贴或上传在下一条消息中，我会开始深度解读并按上述格式输出 Markdown 总结。\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1952,
+        512
+      ],
+      "id": "cff5c740-1982-4de1-bb97-01185056ff61",
+      "name": "Init Prompts"
+    },
+    {
+      "parameters": {
+        "content": "## Define Categories",
+        "height": 400,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        416
+      ],
+      "id": "e7b66131-1c07-4635-bba1-bff349cc92f8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get latest 10 papers for each specified cateory",
+        "height": 400,
+        "width": 1136,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        416
+      ],
+      "id": "9eeb1c05-db09-453c-964c-de35dfe2fdd1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Parse each paper",
+        "height": 400,
+        "width": 1296,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        416
+      ],
+      "id": "b6cecaf7-9ae3-4f1d-80d2-bf5b19af7f61",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Send to slack",
+        "height": 400,
+        "width": 272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        416
+      ],
+      "id": "e2e252d4-6d88-46a4-b343-a8a65a3823b4",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "CS Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 Query arXiv API": {
+      "main": [
+        [
+          {
+            "node": "XML to Json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML to Json": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "get_pdf_link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Paper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Paper": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CS Categories": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "📡 Query arXiv API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_pdf_link": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Paper": {
+      "main": [
+        [
+          {
+            "node": "Init Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Paper Content": {
+      "main": [
+        [
+          {
+            "node": "Clean Paper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Paper": {
+      "main": [
+        [
+          {
+            "node": "Read Paper Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Prompts": {
+      "main": [
+        [
+          {
+            "node": "Summarize Paper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "id": "",
+  "tags": []
+}
