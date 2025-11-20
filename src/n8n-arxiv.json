@@ -1,17 +1,6 @@
 {
-  "name": "Arxiv",
+  "name": "Arxiv.zh",
   "nodes": [
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -736,
-        584
-      ],
-      "id": "df78f9d0-3611-4ec3-aa0f-abc6b7fe47da",
-      "name": "When clicking ‘Execute workflow’"
-    },
     {
       "parameters": {
         "fieldToSplitOut": "feed.entry",
@@ -28,7 +17,7 @@
     },
     {
       "parameters": {
-        "url": "=https://export.arxiv.org/api/query?search_query={{ $json.categories }}&sortBy=submittedDate&sortOrder=descending&start=0&max_results=10",
+        "url": "=https://export.arxiv.org/api/query?search_query={{ $json.categories }}&sortBy=submittedDate&sortOrder=descending&start=0&max_results=5",
         "options": {}
       },
       "id": "b23c9257-76a4-4272-be8e-085867fe9941",
@@ -55,38 +44,6 @@
     },
     {
       "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
-          "mode": "id"
-        },
-        "messageType": "block",
-        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": {{ JSON.stringify($json.output[0].content[0].text + \"\\n-------------------------------------------------------------------------\") }} \n\t\t}\n\t]\n}",
-        "text": "={{ $json.output[0].content[0].text }}",
-        "otherOptions": {
-          "includeLinkToWorkflow": false
-        }
-      },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.3,
-      "position": [
-        2400,
-        584
-      ],
-      "id": "b37dc26e-6bbf-4da8-a2b7-88e355238529",
-      "name": "Send a message",
-      "webhookId": "",
-      "notesInFlow": false,
-      "credentials": {
-        "slackApi": {
-          "id": "",
-          "name": "Slack account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "options": {
           "reset": "={{ $prevNode.name=== \"get_pdf_link\"}}"
         }
@@ -95,7 +52,7 @@
       "typeVersion": 3,
       "position": [
         1056,
-        584
+        592
       ],
       "id": "19a2fb7c-1758-4b0c-83a0-93024f0d6830",
       "name": "Loop Over Items"
@@ -106,7 +63,7 @@
         "url": "http://127.0.0.1:1234/v1/responses",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"input\": [\n    {\n      \"type\": \"message\",\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.summarize_prompt + $json.cleaned_text+ \"\\n paper_link: \"+ $('Fetch Paper').item.json.pdf_link) }}\n  }\n  ],\n  \"model\": \"qwen/qwen3-vl-8b\",\n  \"stream\": false,\n  \"text\": {}\n} ",
+        "jsonBody": "={\n  \"input\": [\n    {\n      \"type\": \"message\",\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.summarize_prompt + $json.cleaned_text+ \"\\n paper_link: \"+ $('Fetch Paper').item.json.pdf_link) }}\n  }\n  ],\n  \"model\": \"qwen/qwen3-4b-2507\",\n  \"stream\": false,\n  \"text\": {}\n} ",
         "options": {
           "timeout": 3600000
         }
@@ -114,7 +71,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        2176,
+        2144,
         512
       ],
       "id": "e2eccf7a-6ddf-4e65-a180-15764e664e17",
@@ -129,7 +86,7 @@
       "typeVersion": 1,
       "position": [
         -288,
-        584
+        592
       ],
       "id": "b1ba761e-a994-4425-94a3-e67b304b7327",
       "name": "Split Out1"
@@ -137,14 +94,14 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "{\n\"categories\": [\n        \"cat:cs.AI\", \"cat:cs.LG\",\"cat:cs.CV\",\"cat:cs.CL\"\n      ]\n}\n",
+        "jsonOutput": "{\n\"categories\": [\n  \"cat:cs.AI\", \n  \"cat:cs.LG\",\n  \"cat:cs.CV\",\n  \"cat:cs.CL\",\n  \"cat:cs.HC\"\n      ]\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -512,
-        584
+        592
       ],
       "id": "13921e67-fd43-4ac7-82cd-780148b5b851",
       "name": "CS Categories"
@@ -157,7 +114,7 @@
       "typeVersion": 3,
       "position": [
         -64,
-        584
+        592
       ],
       "id": "55f4a4cb-5d20-49a6-b9e6-42d89dd11f27",
       "name": "Loop Over Items1"
@@ -245,7 +202,7 @@
             {
               "id": "6e967cc7-1102-48c4-93b0-5cc0cc18081f",
               "name": "summarize_prompt",
-              "value": "=# 论文深度归纳任务说明（Markdown版）\n\n你是一位顶尖的 AI 领域科学家兼科学传播者。请**精读以下清洗后的论文全文**，并完成一次深度归纳。目标不是复述，而是**帮助读者建立心智模型**——让他们理解：问题为何难？作者如何想到这个解法？它为何有效？边界在哪？\n\n> 在我随后提供论文（PDF 或纯文本）后，请严格按照下面格式给出精要、准确、可引用的总结。**不要生成任何代码。**\n\n---\n\n## 输出格式（必须严格遵守）\n\n### 题目\n\n* 原英文题目\n* 中文翻译\n\n### 论文链接\n* 论文链接\n\n### 作者\n\n* 第一作者信息（姓名 / 所属机构）\n\n### 关键要点（要点化，6–10 条）\n\n* 每条 12–20 字左右\n* 覆盖：问题、方法、主要结果、影响\n\n### 一句话 TL;DR（1–2 行）\n\n* 面向非专业听众，用最简单语言总结问题定义, 论文核心贡献与结论（可理解性优先）\n\n### 三句话电梯陈述（Elevator pitch）\n\n* 面向科研/工程决策者，说明“这篇论文为什么重要 / 值不值得关注”\n\n### 技术概述（精炼）\n\n#### 问题定义（1–2 段）\n\n* 清晰界定研究问题与挑战\n\n#### 提出的方法/模型/算法（1 段，强调新颖点）\n\n* 简要描述方法核心与创新之处\n\n#### 关键假设与理论基础（短列点）\n\n* 列出重要假设与依赖的理论结果\n\n### 实验与结果（精确）\n\n#### 用到的数据集、评价指标和基线（列出名称）\n\n* 明确列出所有数据集、主要评价指标与对比基线\n\n#### 主要结果\n\n* 提供关键数值（例如准确率、误差、提升百分比等）\n* 标注这些数值来自论文的哪个表或图（例如“表2”或“图3”）\n* 若论文没有给出某些常见对比或置信区间，请指出缺失项\n\n### 优点与创新点（列点）\n\n* 至少 3 点，写明为何比现有工作更好或不同\n\n### 局限性与风险（列点）\n\n* 至少 3 点，包括：方法局限、实验局限、可重复性、推广性、伦理/社会风险（若相关）\n\n### 可复现性检查清单（短）\n\n* 给出 6 个易检验项，例如：\n\n  1. 数据是否公开\n  2. 训练细节是否完整\n  3. 超参说明\n  4. 随机种子\n  5. 代码/模型权重是否公开\n  6. 所需计算资源\n\n### 后续工作建议（可操作，3–5 条）\n\n* 包括改进实验、消融项、应用场景或理论扩展\n\n### 一句话引用建议（格式：`作者 et al., 年`）\n\n* 用于论文正文简短引用\n\n### 主题关键词（5–10 个）\n\n* 便于索引和检索\n\n### 重要图/表快速导读（可选）\n\n* 列出论文中最关键的 2–3 个图表，并用 1–2 句说明每个图表展示内容及其对结论的意义\n\n### 未来应用场景\n* 讨论未来此研究成果的应用场景和潜力\n\n### 最终结论与推荐（1 段）\n\n* 明确建议（例如：“值得深入阅读 / 可作为参考 / 仅作背景阅读 / 不推荐引用”）\n* 给出 1–2 条理由支持该建议\n\n---\n\n## 风格与长度要求\n\n* 语言：中文（专业但简洁）\n* 避免长篇大论，把握要点\n* 总长度控制在 **500–900 字**（除非用户另有要求）\n* 引用论文内部定位时请使用 **页面/图表编号**（例如“见第4页，图2”）\n* **绝对不要生成或附带任何代码、伪代码或可执行命令**\n\n---\n\n## 额外注意事项\n\n* 若论文包含数学证明或关键公式：**只用一句话概括其结论和用途**，不要逐步推导。\n* 若论文引用了外部关键资源（公开数据集、预训练模型、重要工具）：请列出资源名称并说明是否公开可用。\n* 若论文是综述/ survey：把“方法/实验”部分改为“覆盖主题与比较框架”，并提供对比表格（要点形式）。\n* 若论文质量明显不好（例如实验设计严重缺陷或结果无法支撑结论）：在“局限性”中清楚标注，并在“最终结论”中给出明确负面建议。\n\n---\n\n请将整篇论文（PDF 或纯文本）粘贴或上传在下一条消息中，我会开始深度解读并按上述格式输出 Markdown 总结。\n",
+              "value": "=\n你是一位顶尖的 AI 领域科学家兼科学传播者。请**精读以下清洗后的论文全文**，并完成一次深度归纳。目标不是复述，而是**帮助读者建立心智模型**——让他们理解：问题为何难？作者如何想到这个解法？它为何有效？边界在哪？\n\n> 在我随后提供论文（PDF 或纯文本）后，请严格按照下面格式给出精要、准确、可引用的总结。**不要生成任何代码。**\n\n---\n\n## 输出格式（必须严格遵守）\n* JSON\n###  JSON 字段:\n* topic: string, 论文题目（中英文） \n* content:  string, 论文解析内容。 内容的具体格式定义如下：\n\n\n### 关键要点（要点化，6–10 条）\n\n* 每条 12–20 字左右\n* 覆盖：问题、方法、主要结果、影响\n\n\n### 三句话电梯陈述\n\n* 面向科研/工程决策者，说明“这篇论文要解决什么问题 / 为什么重要 / 值不值得关注”\n\n### 技术概述（精炼）\n\n#### 问题定义（1–2 段）\n\n* 清晰界定研究问题与挑战\n\n#### 提出的方法/模型/算法（1 段，强调新颖点）\n\n* 简要描述方法核心与创新之处\n\n#### 关键假设与理论基础（短列点）\n\n* 列出重要假设与依赖的理论结果\n\n### 实验与结果（精确）\n\n#### 用到的数据集、评价指标和基线（列出名称）\n\n* 明确列出所有数据集、主要评价指标与对比基线\n\n#### 主要结果\n\n* 提供关键数值（例如准确率、误差、提升百分比等）\n* 标注这些数值来自论文的哪个表或图（例如“表2”或“图3”）\n* 若论文没有给出某些常见对比或置信区间，请指出缺失项\n\n### 优点与创新点（列点）\n\n* 至少 3 点，写明为何比现有工作更好或不同\n\n### 局限性与风险（列点）\n\n* 至少 3 点，包括：方法局限、实验局限、可重复性、推广性、伦理/社会风险（若相关）\n\n### 可复现性检查清单（短）\n\n* 给出 6 个易检验项，例如：\n\n  1. 数据是否公开\n  2. 训练细节是否完整\n  3. 超参说明\n  4. 随机种子\n  5. 代码/模型权重是否公开\n  6. 所需计算资源\n\n### 后续工作建议（可操作，3–5 条）\n\n* 包括改进实验、消融项、应用场景或理论扩展\n\n\n### 主题关键词（5–10 个）\n\n* 便于索引和检索\n\n### 题目\n\n* 原英文题目\n* 中文翻译\n\n### 论文链接\n* 论文链接\n\n### 作者\n\n*作者信息（姓名 / 所属机构）\n\n### 未来应用场景\n* 讨论未来此研究成果的应用场景和潜力\n\n### 最终结论与推荐（1 段）\n\n* 明确建议（例如：“值得深入阅读 / 可作为参考 / 仅作背景阅读 / 不推荐引用”）\n* 给出 1–2 条理由支持该建议\n\n---\n\n## 风格与长度要求\n\n* 语言：中文（专业但简洁）\n* 避免长篇大论，把握要点\n* 总长度控制在 **500–900 字**（最后不用显示列出解析字数）\n* **绝对不要生成或附带任何代码、伪代码或可执行命令**\n\n---\n\n## 额外注意事项\n\n* 若论文包含数学证明或关键公式：**只用一句话概括其结论和用途**，不要逐步推导。\n* 若论文引用了外部关键资源（公开数据集、预训练模型、重要工具）：请列出资源名称并说明是否公开可用。\n* 若论文是综述/ survey：把“方法/实验”部分改为“覆盖主题与比较框架”，并提供对比表格（要点形式）。\n* 若论文质量明显不好（例如实验设计严重缺陷或结果无法支撑结论）：在“局限性”中清楚标注，并在“最终结论”中给出明确负面建议。",
               "type": "string"
             }
           ]
@@ -263,7 +220,7 @@
     },
     {
       "parameters": {
-        "content": "## Define Categories",
+        "content": "# Define Categories",
         "height": 400,
         "width": 400
       },
@@ -278,7 +235,7 @@
     },
     {
       "parameters": {
-        "content": "## Get latest 10 papers for each specified cateory",
+        "content": "# Get latest 10 papers for each specified cateory",
         "height": 400,
         "width": 1136,
         "color": 6
@@ -294,7 +251,7 @@
     },
     {
       "parameters": {
-        "content": "## Parse each paper",
+        "content": "# Parse each paper",
         "height": 400,
         "width": 1296,
         "color": 5
@@ -310,9 +267,9 @@
     },
     {
       "parameters": {
-        "content": "## Send to slack",
+        "content": "# Send to slack",
         "height": 400,
-        "width": 272,
+        "width": 704,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
@@ -323,21 +280,100 @@
       ],
       "id": "e2e252d4-6d88-46a4-b343-a8a65a3823b4",
       "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "id"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": {{ JSON.stringify($json.topic) }}\n\t\t}\n\t]\n}",
+        "text": "={{ $json.topic }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2608,
+        512
+      ],
+      "id": "b37dc26e-6bbf-4da8-a2b7-88e355238529",
+      "name": "Send Topic",
+      "notesInFlow": false,
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "id"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": {{ JSON.stringify($('to json').item.json.content) }}\n\t\t}\n\t]\n}",
+        "text": "hello2",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $json.message.ts }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2832,
+        512
+      ],
+      "id": "89f2d6c5-4155-49ca-ac2d-11f0b46e0253",
+      "name": "Send Paper digest",
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function cleanJsonString(str) {\n  if (!str) return str;\n\n  let s = str.trim();\n\n  // Detect triple-backtick code block with or without \"json\"\n  const prefixPattern = /^```json\\s*/i;   // ```json\n  const genericPrefixPattern = /^```\\s*/; // ```\n  const suffixPattern = /\\s*```$/;        // ```\n\n  // Remove prefix if present\n  if (prefixPattern.test(s)) {\n    s = s.replace(prefixPattern, '');\n  } else if (genericPrefixPattern.test(s)) {\n    s = s.replace(genericPrefixPattern, '');\n  }\n\n  // Remove suffix if present\n  if (suffixPattern.test(s)) {\n    s = s.replace(suffixPattern, '');\n  }\n\n  return s.trim();\n}\n\n\nconst raw =$input.first().json.output[0].content[0].text\n\nconst cleaned = cleanJsonString(raw);\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (err) {\n  throw new Error(\n    'JSON parsing failed: ' +\n    err.message +\n    '\\nCleaned content was:\\n' + cleaned\n  );\n}\n\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        512
+      ],
+      "id": "54ef15e6-b5df-486b-ab43-270cde1f624c",
+      "name": "to json"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        592
+      ],
+      "id": "2e2326e9-4f31-4a9e-a52c-00d1ffbb18eb",
+      "name": "When clicking ‘Execute workflow’"
     }
   ],
   "pinData": {},
   "connections": {
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "CS Categories",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "📡 Query arXiv API": {
       "main": [
         [
@@ -389,22 +425,11 @@
         ]
       ]
     },
-    "Send a message": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Summarize Paper": {
       "main": [
         [
           {
-            "node": "Send a message",
+            "node": "to json",
             "type": "main",
             "index": 0
           }
@@ -499,17 +524,58 @@
           }
         ]
       ]
+    },
+    "Send Topic": {
+      "main": [
+        [
+          {
+            "node": "Send Paper digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Paper digest": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "to json": {
+      "main": [
+        [
+          {
+            "node": "Send Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "CS Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": ""
+    "templateCredsSetupCompleted": true
   },
-  "id": "",
   "tags": []
 }
