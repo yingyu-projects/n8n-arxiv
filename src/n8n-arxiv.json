@@ -304,10 +304,11 @@
       ],
       "id": "b37dc26e-6bbf-4da8-a2b7-88e355238529",
       "name": "Send Topic",
+      "webhookId": "",
       "notesInFlow": false,
       "credentials": {
         "slackApi": {
-          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "id": "",
           "name": "Slack account"
         }
       }
@@ -340,9 +341,10 @@
       ],
       "id": "89f2d6c5-4155-49ca-ac2d-11f0b46e0253",
       "name": "Send Paper digest",
+      "webhookId": "",
       "credentials": {
         "slackApi": {
-          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "id": "",
           "name": "Slack account"
         }
       }
@@ -574,8 +576,11 @@
   "settings": {
     "executionOrder": "v1"
   },
+  "versionId": "",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
   },
+  "id": "",
   "tags": []
 }
