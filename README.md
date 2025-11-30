@@ -2,6 +2,12 @@
 
 An intelligent n8n workflow that automatically retrieves the latest research papers from arXiv, uses a local LLM to generate comprehensive summaries, and delivers digestible insights directly to your Slack channel.
 
+## 🚀 Run in Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yingyu-projects/n8n-arxiv/blob/main/arxiv_workflow.ipynb)
+
+Click the badge above to open the workflow directly in Google Colab with TPU support!
+
 ## 🎨 Screenshots
 
 ### English Version
