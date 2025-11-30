@@ -8,10 +8,14 @@ export default function Config() {
     categories,
     newCategories,
     updateCategory,
+    summarizePrompt,
+    setSummarizePrompt,
     loading,
     saving,
+    savingPrompt,
     error,
     saveCategories,
+    saveSummarizePrompt,
     addCategory,
     removeCategory,
   } = useConfig();
@@ -72,6 +76,26 @@ export default function Config() {
             className={styles.saveBtn}
           >
             {saving ? 'Saving...' : 'Save Categories'}
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h3>Summarize Prompt</h3>
+        <div className={styles.promptSection}>
+          <textarea
+            value={summarizePrompt}
+            onChange={(e) => setSummarizePrompt(e.target.value)}
+            className={styles.promptTextarea}
+            placeholder="Enter the summarize prompt..."
+            rows={20}
+          />
+          <button
+            onClick={saveSummarizePrompt}
+            disabled={savingPrompt}
+            className={styles.saveBtn}
+          >
+            {savingPrompt ? 'Saving...' : 'Save Prompt'}
           </button>
         </div>
       </div>

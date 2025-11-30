@@ -36,11 +36,14 @@ class PaperMapper:
         )
     
     @staticmethod
-    def to_orm(domain: Paper) -> PaperORM:
-        """Convert domain entity to ORM model."""
-        # Convert UUID to string if using SQLite
-        is_sqlite = settings.database_url.startswith("sqlite")
-        paper_id = str(domain.id) if is_sqlite else domain.id
+    def to_orm(domain: Paper, convert_uuid_to_string: bool = False) -> PaperORM:
+        """Convert domain entity to ORM model.
+        
+        Args:
+            domain: Domain entity to convert
+            convert_uuid_to_string: If True, convert UUID to string (for SQLite)
+        """
+        paper_id = str(domain.id) if convert_uuid_to_string else domain.id
         
         return PaperORM(
             id=paper_id,

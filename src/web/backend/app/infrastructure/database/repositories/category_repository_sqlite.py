@@ -1,31 +1,25 @@
-"""Category repository implementation using SQLAlchemy."""
+"""Category repository implementation for SQLite."""
 from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
 
-from app.domain.category.entities.category import Category
 from app.domain.category.repositories.category_repository import CategoryRepository
+from app.domain.category.entities.category import Category
 from app.infrastructure.database.models.category_orm import CategoryORM
 from app.infrastructure.mappers.category_mapper import CategoryMapper
-from app.config import settings
 
 
-class CategoryRepositoryImpl(CategoryRepository):
-    """SQLAlchemy implementation of CategoryRepository."""
+class CategoryRepositorySQLite(CategoryRepository):
+    """SQLite-specific implementation of CategoryRepository."""
     
     def __init__(self, session: Session):
         """Initialize with database session."""
         self._session = session
     
-    def _convert_id_for_query(self, category_id: UUID):
-        """Convert UUID to string if using SQLite."""
-        is_sqlite = settings.database_url.startswith("sqlite")
-        return str(category_id) if is_sqlite else category_id
-    
     async def save(self, category: Category) -> Category:
         """Save a category."""
-        # Convert UUID to string for SQLite compatibility
-        category_id = self._convert_id_for_query(category.id)
+        # Convert UUID to string for SQLite
+        category_id = str(category.id)
         existing = self._session.query(CategoryORM).filter(
             CategoryORM.id == category_id
         ).first()
@@ -38,7 +32,8 @@ class CategoryRepositoryImpl(CategoryRepository):
             self._session.refresh(existing)
             return CategoryMapper.to_domain(existing)
         else:
-            orm = CategoryMapper.to_orm(category)
+            # Convert UUID to string for SQLite
+            orm = CategoryMapper.to_orm(category, convert_uuid_to_string=True)
             self._session.add(orm)
             self._session.commit()
             self._session.refresh(orm)
@@ -46,8 +41,8 @@ class CategoryRepositoryImpl(CategoryRepository):
     
     async def find_by_id(self, category_id: UUID) -> Optional[Category]:
         """Find category by ID."""
-        # Convert UUID to string for SQLite compatibility
-        query_id = self._convert_id_for_query(category_id)
+        # Convert UUID to string for SQLite
+        query_id = str(category_id)
         orm = self._session.query(CategoryORM).filter(
             CategoryORM.id == query_id
         ).first()

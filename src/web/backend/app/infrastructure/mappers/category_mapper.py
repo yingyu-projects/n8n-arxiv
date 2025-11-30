@@ -2,7 +2,6 @@
 import uuid
 from app.domain.category.entities.category import Category
 from app.infrastructure.database.models.category_orm import CategoryORM
-from app.config import settings
 
 
 class CategoryMapper:
@@ -16,13 +15,6 @@ class CategoryMapper:
         return id_value
     
     @staticmethod
-    def _ensure_string(id_value) -> str:
-        """Convert UUID object to string if needed (for SQLite)."""
-        if isinstance(id_value, uuid.UUID):
-            return str(id_value)
-        return id_value
-    
-    @staticmethod
     def to_domain(orm: CategoryORM) -> Category:
         """Convert ORM model to domain entity."""
         return Category(
@@ -33,11 +25,14 @@ class CategoryMapper:
         )
     
     @staticmethod
-    def to_orm(domain: Category) -> CategoryORM:
-        """Convert domain entity to ORM model."""
-        # Convert UUID to string if using SQLite
-        is_sqlite = settings.database_url.startswith("sqlite")
-        category_id = CategoryMapper._ensure_string(domain.id) if is_sqlite else domain.id
+    def to_orm(domain: Category, convert_uuid_to_string: bool = False) -> CategoryORM:
+        """Convert domain entity to ORM model.
+        
+        Args:
+            domain: Domain entity to convert
+            convert_uuid_to_string: If True, convert UUID to string (for SQLite)
+        """
+        category_id = str(domain.id) if convert_uuid_to_string else domain.id
         
         return CategoryORM(
             id=category_id,

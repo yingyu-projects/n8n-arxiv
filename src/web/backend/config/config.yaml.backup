@@ -1,0 +1,21 @@
+database:
+  # Database type: "sqlite" or "postgresql"
+  type: "sqlite"  # For local development
+  # For production with Docker, use:
+  # type: "postgresql"
+  
+  # Database connection URL
+  url: "sqlite:///./arxiv_db.sqlite"
+  # For production with Docker, use PostgreSQL:
+  # url: "postgresql://arxiv:arxiv@db:5432/arxiv_db"
+
+llm:
+  provider: "local"  # or "openai"
+  local:
+    base_url: "http://127.0.0.1:1234"
+    model: "qwen/qwen3-vl-8b"
+    endpoint: "/v1/responses"
+  openai:
+    api_key: ""
+    model: "gpt-4"
+

@@ -62,15 +62,23 @@ The frontend will be available at `http://localhost:5173`
    ```
 
 4. **Configure settings:**
+   **IMPORTANT:** You must create and configure `config/config.yaml` with required settings.
+   The application will not start without proper database configuration.
+   
    Edit `config/config.yaml` to configure:
-   - Database URL (defaults to SQLite for local development)
+   - **Database type and URL (REQUIRED)**
    - LLM provider settings:
    ```yaml
    database:
-     # For local development, use SQLite (no PostgreSQL needed)
+     # Database type: "sqlite" or "postgresql" (REQUIRED)
+     type: "sqlite"  # For local development
+     # For production with Docker, use:
+     # type: "postgresql"
+     
+     # Database connection URL (REQUIRED)
      url: "sqlite:///./arxiv_db.sqlite"
      # For production with Docker, use PostgreSQL:
-     # url: "postgresql://arxiv:arxiv@localhost:5432/arxiv_db"
+     # url: "postgresql://arxiv:arxiv@db:5432/arxiv_db"
    
    llm:
      provider: "local"  # or "openai"
@@ -83,7 +91,10 @@ The frontend will be available at `http://localhost:5173`
        model: "gpt-4"
    ```
    
-   **Note:** The application uses SQLite by default for local development (no PostgreSQL setup required). The Docker Compose setup uses PostgreSQL for production deployments.
+   **Note:** 
+   - Both `database.type` and `database.url` are **REQUIRED** in config.yaml
+   - You can override `database.url` using the `DATABASE_URL` environment variable
+   - The application will raise an error if database configuration is missing
 
 5. **Set up database:**
    ```bash

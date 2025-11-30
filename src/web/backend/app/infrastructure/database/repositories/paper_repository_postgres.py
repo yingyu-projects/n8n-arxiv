@@ -1,33 +1,26 @@
-"""Paper repository implementation using SQLAlchemy."""
+"""Paper repository implementation for PostgreSQL."""
 from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
 
-from app.domain.paper.entities.paper import Paper
 from app.domain.paper.repositories.paper_repository import PaperRepository
+from app.domain.paper.entities.paper import Paper
 from app.infrastructure.database.models.paper_orm import PaperORM
 from app.infrastructure.mappers.paper_mapper import PaperMapper
-from app.config import settings
 
 
-class PaperRepositoryImpl(PaperRepository):
-    """SQLAlchemy implementation of PaperRepository."""
+class PaperRepositoryPostgres(PaperRepository):
+    """PostgreSQL-specific implementation of PaperRepository."""
     
     def __init__(self, session: Session):
         """Initialize with database session."""
         self._session = session
     
-    def _convert_id_for_query(self, paper_id: UUID):
-        """Convert UUID to string if using SQLite."""
-        is_sqlite = settings.database_url.startswith("sqlite")
-        return str(paper_id) if is_sqlite else paper_id
-    
     async def save(self, paper: Paper) -> Paper:
         """Save a paper."""
-        # Convert UUID to string for SQLite compatibility
-        paper_id = self._convert_id_for_query(paper.id)
+        # PostgreSQL supports UUID natively, no conversion needed
         existing = self._session.query(PaperORM).filter(
-            PaperORM.id == paper_id
+            PaperORM.id == paper.id
         ).first()
         
         if existing:
@@ -44,10 +37,9 @@ class PaperRepositoryImpl(PaperRepository):
     
     async def find_by_id(self, paper_id: UUID) -> Optional[Paper]:
         """Find paper by ID."""
-        # Convert UUID to string for SQLite compatibility
-        query_id = self._convert_id_for_query(paper_id)
+        # PostgreSQL supports UUID natively
         orm = self._session.query(PaperORM).filter(
-            PaperORM.id == query_id
+            PaperORM.id == paper_id
         ).first()
         
         return PaperMapper.to_domain(orm) if orm else None

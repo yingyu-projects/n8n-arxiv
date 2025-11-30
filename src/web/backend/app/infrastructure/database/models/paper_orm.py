@@ -8,7 +8,8 @@ from app.infrastructure.database.database import Base
 from app.config import settings
 
 # Determine if using SQLite (SQLite doesn't support UUID type natively)
-_is_sqlite = settings.database_url.startswith("sqlite")
+# Use database_type from settings for explicit configuration
+_is_sqlite = settings.database_type == "sqlite"
 _id_type = String if _is_sqlite else UUID(as_uuid=True)
 
 

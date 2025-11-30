@@ -5,8 +5,12 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.database import get_db
 from app.domain.paper.repositories.paper_repository import PaperRepository
 from app.domain.category.repositories.category_repository import CategoryRepository
-from app.infrastructure.database.repositories.paper_repository_impl import PaperRepositoryImpl
-from app.infrastructure.database.repositories.category_repository_impl import CategoryRepositoryImpl
+from app.domain.config.repositories.config_repository import ConfigRepository
+from app.infrastructure.database.repositories import (
+    create_paper_repository,
+    create_category_repository,
+    create_config_repository,
+)
 from app.infrastructure.external.arxiv_client import ArxivClient
 from app.infrastructure.external.pdf_client import PdfClient
 from app.infrastructure.services.text_cleaner import TextCleaner
@@ -14,13 +18,18 @@ from app.infrastructure.services.config_loader import ConfigLoader
 
 
 def get_paper_repository(db: Session = Depends(get_db)) -> PaperRepository:
-    """Get paper repository."""
-    return PaperRepositoryImpl(db)
+    """Get paper repository (factory selects SQLite or PostgreSQL implementation)."""
+    return create_paper_repository(db)
 
 
 def get_category_repository(db: Session = Depends(get_db)) -> CategoryRepository:
-    """Get category repository."""
-    return CategoryRepositoryImpl(db)
+    """Get category repository (factory selects SQLite or PostgreSQL implementation)."""
+    return create_category_repository(db)
+
+
+def get_config_repository(db: Session = Depends(get_db)) -> ConfigRepository:
+    """Get config repository (factory selects SQLite or PostgreSQL implementation)."""
+    return create_config_repository(db)
 
 
 def get_arxiv_client() -> ArxivClient:

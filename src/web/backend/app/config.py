@@ -15,15 +15,36 @@ class Settings:
         config_loader = ConfigLoader()
         self._config = config_loader.load_config()
         
-        # Database - check environment variable first, then config.yaml, then default
-        # Default to SQLite for local development
-        self.database_url: str = os.getenv(
-            "DATABASE_URL",
-            self._config.get("database", {}).get(
-                "url",
-                "sqlite:///./arxiv_db.sqlite"
+        # Database configuration - REQUIRED, no defaults
+        database_config = self._config.get("database", {})
+        
+        # Database type: "sqlite" or "postgresql" - REQUIRED
+        db_type = database_config.get("type")
+        if not db_type:
+            raise ValueError(
+                "Database type is required in config.yaml. "
+                "Please specify 'database.type' as 'sqlite' or 'postgresql'."
             )
-        )
+        
+        if db_type not in ["sqlite", "postgresql"]:
+            raise ValueError(
+                f"Invalid database type: {db_type}. "
+                "Must be 'sqlite' or 'postgresql'."
+            )
+        
+        self.database_type: str = db_type
+        
+        # Database URL - REQUIRED (can be overridden by DATABASE_URL env var)
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            db_url = database_config.get("url")
+            if not db_url:
+                raise ValueError(
+                    "Database URL is required. "
+                    "Please specify 'database.url' in config.yaml or set DATABASE_URL environment variable."
+                )
+        
+        self.database_url: str = db_url
         
         # API
         self.api_title: str = "arXiv Parser API"

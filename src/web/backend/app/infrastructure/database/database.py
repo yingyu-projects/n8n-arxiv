@@ -4,8 +4,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
-# Determine if using SQLite
-is_sqlite = settings.database_url.startswith("sqlite")
+# Determine if using SQLite from explicit database type configuration
+is_sqlite = settings.database_type == "sqlite"
 
 # Create engine with appropriate settings
 if is_sqlite:

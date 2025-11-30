@@ -1,0 +1,2 @@
+"""Config entities module."""
+

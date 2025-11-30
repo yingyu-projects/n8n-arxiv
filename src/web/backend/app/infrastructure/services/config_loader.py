@@ -12,36 +12,42 @@ class ConfigLoader:
         """Initialize config loader."""
         if config_path is None:
             # Default to config/config.yaml relative to backend directory
-            backend_dir = Path(__file__).parent.parent.parent
+            # __file__ is at app/infrastructure/services/config_loader.py
+            # Go up 3 levels to get to backend directory
+            backend_dir = Path(__file__).parent.parent.parent.parent
             config_path = backend_dir / "config" / "config.yaml"
         
         self.config_path = Path(config_path)
     
     def load_config(self) -> Dict[str, Any]:
-        """Load configuration from YAML file."""
+        """Load configuration from YAML file.
+        
+        Raises:
+            FileNotFoundError: If config file does not exist
+            Exception: If config file cannot be read or parsed
+        """
         if not self.config_path.exists():
-            # Return default config
-            return {
-                "database": {
-                    "url": "sqlite:///./arxiv_db.sqlite"
-                },
-                "llm": {
-                    "provider": "local",
-                    "local": {
-                        "base_url": "http://127.0.0.1:1234",
-                        "model": "qwen/qwen3-vl-8b",
-                        "endpoint": "/v1/responses"
-                    },
-                    "openai": {
-                        "api_key": "",
-                        "model": "gpt-4"
-                    }
-                }
-            }
+            raise FileNotFoundError(
+                f"Configuration file not found: {self.config_path}. "
+                "Please create config/config.yaml with required database and LLM settings."
+            )
         
         try:
             with open(self.config_path, 'r') as f:
-                return yaml.safe_load(f) or {}
+                config = yaml.safe_load(f) or {}
+                
+            # Validate required configuration sections
+            if not config.get("database"):
+                raise ValueError(
+                    "Missing 'database' section in config.yaml. "
+                    "Please specify 'database.type' and 'database.url'."
+                )
+            
+            return config
+        except FileNotFoundError:
+            raise
+        except ValueError:
+            raise
         except Exception as e:
-            raise Exception(f"Failed to load config: {str(e)}")
+            raise Exception(f"Failed to load config from {self.config_path}: {str(e)}")
 

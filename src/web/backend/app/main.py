@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.presentation.api import papers, categories, workflow
+from app.presentation.api import papers, categories, workflow, config
 
 
 app = FastAPI(
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(papers.router, prefix=settings.api_prefix, tags=["papers"])
 app.include_router(categories.router, prefix=settings.api_prefix, tags=["categories"])
 app.include_router(workflow.router, prefix=settings.api_prefix, tags=["workflow"])
+app.include_router(config.router, prefix=settings.api_prefix, tags=["config"])
 
 
 @app.get("/")

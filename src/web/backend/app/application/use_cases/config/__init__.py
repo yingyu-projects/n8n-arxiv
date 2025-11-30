@@ -1,0 +1,2 @@
+"""Config use cases module."""
+

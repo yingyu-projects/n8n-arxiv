@@ -42,26 +42,28 @@ class ArxivClient:
                     pdf_path = pdf_match.group(1)
                     pdf_link = f"https://arxiv.org{pdf_path}"
                 
-                # Extract title
-                title_span = title_block.find('span', class_='descriptor', string='Title:')
-                if title_span:
-                    title_div = title_span.find_next_sibling()
-                    if title_div:
-                        title = title_div.get_text(strip=True)
-                        
-                        # Extract ArXiv ID from PDF link
-                        arxiv_id = None
-                        if pdf_link:
-                            arxiv_id_match = re.search(r'/pdf/(\d{4}\.\d{5}(v\d+)?)', pdf_link)
-                            if arxiv_id_match:
-                                arxiv_id = arxiv_id_match.group(1)
-                        
-                        if title and pdf_link:
-                            papers.append({
-                                "title": title,
-                                "pdf_link": pdf_link,
-                                "arxiv_id": arxiv_id,
-                            })
+                # Extract title using regex (matching the JS implementation)
+                title_block_str = str(title_block)
+                title_match = re.search(r'<span class="descriptor">Title:</span>\s*(.*?)\s*</div>', title_block_str, re.DOTALL)
+                title = None
+                if title_match:
+                    raw_title = title_match.group(1)
+                    # Clean HTML tags
+                    title = re.sub(r'<[^>]+>', '', raw_title).strip()
+                
+                # Extract ArXiv ID from PDF link
+                arxiv_id = None
+                if pdf_link:
+                    arxiv_id_match = re.search(r'/pdf/(\d{4}\.\d{5}(v\d+)?)', pdf_link)
+                    if arxiv_id_match:
+                        arxiv_id = arxiv_id_match.group(1)
+                
+                if title and pdf_link:
+                    papers.append({
+                        "title": title,
+                        "pdf_link": pdf_link,
+                        "arxiv_id": arxiv_id,
+                    })
             
             return papers
             
