@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "fieldToSplitOut": "feed.entry",
+        "fieldToSplitOut": "results",
         "options": {}
       },
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        240,
+        288,
         432
       ],
       "id": "21ce1244-8d40-45fa-bc47-c1b977202440",
@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "url": "=https://export.arxiv.org/api/query?search_query={{ $('Loop Over Items1').item.json.categories }}&sortBy=submittedDate&sortOrder=descending&start=0&max_results={{ $('CS Categories').item.json.num_of_papers }}",
+        "url": "=https://arxiv.org/list/{{ $('Loop Over Items1').item.json.categories }}/recent?skip=0&show={{ $('CS Categories').item.json.num_of_papers }}",
         "options": {}
       },
       "id": "b23c9257-76a4-4272-be8e-085867fe9941",
@@ -31,19 +31,6 @@
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.xml",
-      "typeVersion": 1,
-      "position": [
-        16,
-        432
-      ],
-      "id": "c7fd378d-1e41-497e-a2c6-dc17c69d5830",
-      "name": "XML to Json"
-    },
-    {
-      "parameters": {
         "options": {
           "reset": "={{ $prevNode.name=== \"get_pdf_link\"}}"
         }
@@ -51,8 +38,8 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        688,
-        504
+        704,
+        496
       ],
       "id": "19a2fb7c-1758-4b0c-83a0-93024f0d6830",
       "name": "Loop Over Items"
@@ -94,14 +81,14 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "{\n\"categories\": [\n  \"cat:cs.LG\",\n  \"cat:cs.CV\",\n  \"cat:cs.CL\",\n  \"cat:cs.HC\",\n  \"cat:cs.AI\"\n      ],\n\"num_of_papers\": 5\n}\n",
+        "jsonOutput": "{\n\"categories\": [\n   \"cs.AI\",\n  \"cs.CL\",\n  \"cs.LG\",\n  \"cs.HC\",\n  \"cs.CV\"\n ],\n\"num_of_papers\": 50\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -1408,
-        496
+        512
       ],
       "id": "13921e67-fd43-4ac7-82cd-780148b5b851",
       "name": "CS Categories"
@@ -114,7 +101,7 @@
       "typeVersion": 3,
       "position": [
         -656,
-        504
+        512
       ],
       "id": "55f4a4cb-5d20-49a6-b9e6-42d89dd11f27",
       "name": "Loop Over Items1"
@@ -126,7 +113,7 @@
             {
               "id": "c23c2356-32fe-4b84-9469-8d29e29b549a",
               "name": "pdf_link",
-              "value": "={{   ($json.link && Array.isArray($json.link) &&    $json.link.find(l => l.type === \"application/pdf\")?.href)   }}",
+              "value": "={{ $json.pdf }}",
               "type": "string"
             }
           ]
@@ -251,7 +238,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "C09TELUJZFU",
           "mode": "id"
         },
         "messageType": "block",
@@ -270,7 +257,7 @@
       "typeVersion": 2.3,
       "position": [
         2256,
-        504
+        512
       ],
       "id": "89f2d6c5-4155-49ca-ac2d-11f0b46e0253",
       "name": "Send Paper digest",
@@ -345,7 +332,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "C09TELUJZFU",
           "mode": "id"
         },
         "messageType": "block",
@@ -377,7 +364,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "YOUR_SLACK_CHANNEL_ID",
+          "value": "C09TELUJZFU",
           "mode": "id"
         },
         "messageType": "block",
@@ -414,6 +401,46 @@
       ],
       "id": "b1e004f9-28bc-455c-9133-e606201cb19d",
       "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "arxiv",
+              "cssSelector": "#articles > dt, #articles > dd",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        432
+      ],
+      "id": "44412171-8584-44b3-9f94-7ccfe691883d",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: items[0].json.arxiv is the array you provided\nconst arxivArray = $input.first().json.arxiv\n\nconst results = [];\n\nfor (let i = 0; i < arxivArray.length; i += 2) {\n    const metaBlock = arxivArray[i];       // Even index: contains pdf links\n    const titleBlock = arxivArray[i + 1];  // Odd index: contains title\n\n    if (!metaBlock || !titleBlock) continue;\n\n    // --- Extract PDF link ---\n    // The PDF link is like: <a href=\"/pdf/2511.21678\" ...>pdf</a>\n    const pdfMatch = metaBlock.match(/href=\"([^\"]*\\/pdf\\/[^\"]*)\"/);\n    const pdfLink = pdfMatch ? (\"https://arxiv.org\" + pdfMatch[1]) : null;\n\n    // --- Extract Title ---\n    // Title appears inside: <span class=\"descriptor\">Title:</span> ACTUAL TITLE\n    const titleMatch = titleBlock.match(/<span class=\"descriptor\">Title:<\\/span>\\s*(.*?)\\s*<\\/div>/);\n    const rawTitle = titleMatch ? titleMatch[1] : null;\n\n    // Clean HTML tags\n    const title = rawTitle ? rawTitle.replace(/<[^>]+>/g, \"\").trim() : null;\n\n    results.push({\n        title,\n        pdf: pdfLink,\n    });\n}\n\n\nreturn [\n    {\n        json: {\n            results\n        }\n    }\n];\n\n//return results.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        432
+      ],
+      "id": "17fbd367-1163-41a6-86f0-6da6b5d6a76c",
+      "name": "Code in JavaScript"
     }
   ],
   "pinData": {},
@@ -422,18 +449,7 @@
       "main": [
         [
           {
-            "node": "XML to Json",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "XML to Json": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
+            "node": "HTML",
             "type": "main",
             "index": 0
           }
@@ -623,13 +639,35 @@
           }
         ]
       ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f2dcc3e5-9514-4634-899d-085aac429474",
+  "versionId": "1eff594c-0aa8-46d7-adc1-269d6111f441",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "00fb1c294cb46e689aeecb9b4fc0ff2b141e9b79d7eff0e7886188f6a04d879b"
