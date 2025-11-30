@@ -18,19 +18,30 @@ export const paperService = {
 
   async triggerWorkflow(
     categories: string[],
-    numPapers = 50,
-    summarizePrompt = ''
-  ): Promise<{
+    numPapers = 50
+  ): Promise<{ message: string; status: string }> {
+    const response = await api.post('/workflow/trigger', {
+      categories,
+      num_papers: numPapers,
+    });
+    return response.data;
+  },
+
+  async getWorkflowStatus(): Promise<{
+    status: string;
+    total_papers: number;
     processed: number;
     skipped: number;
     errors: string[];
     papers: Array<{ id: string; title: string; pdf_link: string }>;
+    elapsed_time: number | null;
   }> {
-    const response = await api.post('/workflow/trigger', {
-      categories,
-      num_papers: numPapers,
-      summarize_prompt: summarizePrompt,
-    });
+    const response = await api.get('/workflow/status');
+    return response.data;
+  },
+
+  async stopWorkflow(): Promise<{ message: string }> {
+    const response = await api.post('/workflow/stop');
     return response.data;
   },
 };

@@ -9,14 +9,14 @@ export default function WorkflowTrigger() {
     updateCategory,
     numPapers,
     setNumPapers,
-    summarizePrompt,
-    setSummarizePrompt,
     loading,
-    result,
+    status,
     error,
+    isRunning,
     addCategory,
     removeCategory,
     triggerWorkflow,
+    stopWorkflow,
   } = useWorkflowTrigger();
 
   return (
@@ -57,55 +57,80 @@ export default function WorkflowTrigger() {
           type="number"
           min="1"
           max="100"
-        />
-      </div>
-
-      <div className={styles.formSection}>
-        <label>Summarize Prompt (optional)</label>
-        <textarea
-          value={summarizePrompt}
-          onChange={(e) => setSummarizePrompt(e.target.value)}
-          rows={5}
-          placeholder="Leave empty to use default prompt"
+          disabled={isRunning}
         />
       </div>
 
       <button
-        onClick={triggerWorkflow}
-        disabled={loading}
-        className={styles.triggerBtn}
+        onClick={isRunning ? stopWorkflow : triggerWorkflow}
+        disabled={loading && !isRunning}
+        className={`${styles.triggerBtn} ${isRunning ? styles.stopBtn : ''}`}
       >
-        {loading ? 'Processing...' : 'Trigger Workflow'}
+        {isRunning ? 'Stop Workflow' : 'Trigger Workflow'}
       </button>
 
       {error && <div className={styles.error}>{error}</div>}
 
-      {result && (
-        <div className={styles.result}>
-          <h3>Workflow Result</h3>
+      {status && (
+        <div className={styles.statusSection}>
+          <h3>Workflow Status</h3>
+          
+          <div className={styles.progressBar}>
+            <div
+              className={styles.progressFill}
+              style={{
+                width: status.total_papers > 0
+                  ? `${(status.processed / status.total_papers) * 100}%`
+                  : '0%',
+              }}
+            />
+          </div>
+          <div className={styles.progressText}>
+            {status.processed} / {status.total_papers} papers processed
+          </div>
+
           <div className={styles.stats}>
             <div className={styles.stat}>
+              <span className={styles.label}>Status:</span>
+              <span className={`${styles.value} ${styles[status.status]}`}>
+                {status.status}
+              </span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.label}>Total Papers:</span>
+              <span className={styles.value}>{status.total_papers}</span>
+            </div>
+            <div className={styles.stat}>
               <span className={styles.label}>Processed:</span>
-              <span className={styles.value}>{result.processed}</span>
+              <span className={styles.value}>{status.processed}</span>
             </div>
             <div className={styles.stat}>
               <span className={styles.label}>Skipped:</span>
-              <span className={styles.value}>{result.skipped}</span>
+              <span className={styles.value}>{status.skipped}</span>
             </div>
-            {result.errors.length > 0 && (
+            {status.errors.length > 0 && (
               <div className={styles.stat}>
                 <span className={styles.label}>Errors:</span>
                 <span className={`${styles.value} ${styles.errorCount}`}>
-                  {result.errors.length}
+                  {status.errors.length}
+                </span>
+              </div>
+            )}
+            {status.elapsed_time !== null && (
+              <div className={styles.stat}>
+                <span className={styles.label}>Elapsed Time:</span>
+                <span className={styles.value}>
+                  {Math.floor(status.elapsed_time)}s
                 </span>
               </div>
             )}
           </div>
-          {result.errors.length > 0 && (
+
+          {status.errors.length > 0 && (
             <div className={styles.errors}>
               <h4>Errors:</h4>
               <ul>
-                {result.errors.map((err: string, index: number) => (
+                {status.errors.map((err: string, index: number) => (
                   <li key={index}>{err}</li>
                 ))}
               </ul>

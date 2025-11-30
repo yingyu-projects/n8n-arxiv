@@ -1,6 +1,6 @@
 """Workflow API schemas."""
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class TriggerWorkflowRequest(BaseModel):
@@ -8,7 +8,6 @@ class TriggerWorkflowRequest(BaseModel):
     
     categories: List[str] = Field(..., min_items=1)
     num_papers: int = Field(default=50, ge=1, le=100)
-    summarize_prompt: str = Field(default="")
 
 
 class WorkflowResponse(BaseModel):
@@ -18,4 +17,16 @@ class WorkflowResponse(BaseModel):
     skipped: int
     errors: List[str]
     papers: List[Dict[str, Any]]
+
+
+class WorkflowStatusResponse(BaseModel):
+    """Workflow status response schema."""
+    
+    status: str
+    total_papers: int
+    processed: int
+    skipped: int
+    errors: List[str]
+    papers: List[Dict[str, Any]]
+    elapsed_time: Optional[float] = None
 
