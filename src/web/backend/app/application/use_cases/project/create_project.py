@@ -40,3 +40,4 @@ class CreateProjectUseCase:
         project = await self._project_repository.save(project)
         return ProjectDTO.from_domain(project)
 
+

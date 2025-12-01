@@ -21,3 +21,4 @@ class GetProjectsUseCase:
         projects = await self._project_repository.find_all()
         return [ProjectDTO.from_domain(project) for project in projects]
 
+

@@ -39,3 +39,4 @@ class UpdatePluginUseCase:
         updated_plugin = await self._plugin_repository.save(plugin)
         return PluginDTO.from_domain(updated_plugin)
 
+

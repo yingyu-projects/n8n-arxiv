@@ -25,3 +25,4 @@ class GetProjectUseCase:
         project = await self._project_repository.find_by_id(project_id)
         return ProjectDTO.from_domain(project) if project else None
 
+

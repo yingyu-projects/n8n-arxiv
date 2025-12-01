@@ -26,3 +26,4 @@ class DeleteProjectUseCase:
         
         await self._project_repository.delete(project_id)
 
+

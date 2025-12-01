@@ -70,3 +70,4 @@ class ProjectRepositorySQLite(ProjectRepository):
             self._session.delete(orm)
             self._session.commit()
 
+

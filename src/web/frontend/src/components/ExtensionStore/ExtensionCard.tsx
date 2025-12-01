@@ -98,3 +98,4 @@ export default function ExtensionCard({ plugin, onToggle }: ExtensionCardProps) 
   );
 }
 
+
