@@ -1,17 +1,17 @@
 """Slack output plugin."""
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from app.domain.paper.entities.paper import Paper
 from app.domain.plugin.value_objects.config_schema import ConfigSchema
 from app.infrastructure.plugin.base_plugin import OutputPlugin
-from app.infrastructure.plugin.plugins.slack_output.slack_client import SlackClient
+from app.application.plugin.core_api import CoreAPI
 
 
 class SlackOutputPlugin(OutputPlugin):
     """Slack output plugin for sending parsed papers to Slack."""
     
-    def __init__(self):
+    def __init__(self, core_api: Optional[CoreAPI] = None):
         """Initialize Slack output plugin."""
         super().__init__(
             name="slack_output",
@@ -19,7 +19,8 @@ class SlackOutputPlugin(OutputPlugin):
             metadata={
                 "description": "Send parsed papers to a Slack channel via webhook",
                 "author": "arXiv Parser",
-            }
+            },
+            core_api=core_api
         )
     
     def get_config_schema(self) -> ConfigSchema:
@@ -69,19 +70,43 @@ class SlackOutputPlugin(OutputPlugin):
         # Format message
         message = self._format_message(paper)
         
-        # Send to Slack
-        client = SlackClient(webhook_url)
-        result = await client.send_message(
-            text=message,
-            channel=channel if channel else None,
-            username=username,
-        )
+        # Use CoreAPI for HTTP requests and logging
+        self.api.log_info(f"Sending paper {paper.id} to Slack", self.name)
         
-        return {
-            "success": True,
-            "message": "Paper sent to Slack successfully",
-            "slack_response": result,
-        }
+        try:
+            # Prepare Slack webhook payload
+            payload = {
+                "text": message,
+            }
+            
+            if channel:
+                payload["channel"] = channel
+            
+            if username:
+                payload["username"] = username
+            
+            # Use CoreAPI HTTP client
+            response = await self.api.http_post(
+                url=webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response['status'] == 200:
+                self.api.log_info("Paper sent to Slack successfully", self.name)
+                return {
+                    "success": True,
+                    "message": "Paper sent to Slack successfully",
+                    "slack_response": response['body'],
+                }
+            else:
+                error_msg = f"Slack API returned status {response['status']}"
+                self.api.log_error(error_msg, self.name)
+                raise ValueError(error_msg)
+        
+        except Exception as e:
+            self.api.log_error("Failed to send to Slack", self.name, e)
+            raise
     
     def _format_message(self, paper: Paper) -> str:
         """Format paper information as Slack message.

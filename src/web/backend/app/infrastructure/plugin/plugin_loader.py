@@ -3,9 +3,10 @@ import importlib
 import inspect
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, Optional
 
 from app.infrastructure.plugin.base_plugin import BasePlugin, OutputPlugin, InputPlugin, ProcessingPlugin
+from app.application.plugin.core_api import CoreAPI
 
 
 class PluginLoader:
@@ -66,14 +67,38 @@ class PluginLoader:
         
         return plugins
     
-    def instantiate_plugin(self, plugin_class: Type[BasePlugin]) -> BasePlugin:
+    def instantiate_plugin(
+        self, 
+        plugin_class: Type[BasePlugin],
+        core_api: Optional[CoreAPI] = None
+    ) -> BasePlugin:
         """Instantiate a plugin class.
         
         Args:
             plugin_class: Plugin class to instantiate
+            core_api: Optional CoreAPI instance to inject
             
         Returns:
             Plugin instance
         """
-        return plugin_class()
+        # Try to instantiate with core_api parameter
+        if core_api is not None:
+            try:
+                # Check if plugin accepts core_api parameter
+                import inspect
+                sig = inspect.signature(plugin_class.__init__)
+                if 'core_api' in sig.parameters:
+                    return plugin_class(core_api=core_api)
+            except (TypeError, AttributeError):
+                # Fallback to default instantiation
+                pass
+        
+        # Fallback: instantiate without core_api (backward compatibility)
+        instance = plugin_class()
+        
+        # If core_api is provided, inject it via protected attribute
+        if core_api is not None:
+            instance._core_api = core_api
+        
+        return instance
 

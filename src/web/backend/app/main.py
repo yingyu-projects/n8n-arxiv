@@ -7,8 +7,12 @@ from app.presentation.api import papers, categories, workflow, config, workflows
 from app.infrastructure.database.database import SessionLocal
 from app.infrastructure.database.repositories import (
     create_plugin_repository,
+    create_paper_repository,
+    create_config_repository,
+    create_project_plugin_config_repository,
 )
 from app.application.plugin.plugin_registry import PluginRegistry
+from app.application.plugin.core_api_impl import CoreAPIImpl
 from app.infrastructure.plugin.plugin_loader import PluginLoader
 
 
@@ -19,8 +23,25 @@ async def lifespan(app: FastAPI):
     try:
         db = SessionLocal()
         try:
+            # Create repositories
             plugin_repository = create_plugin_repository(db)
-            plugin_registry = PluginRegistry(plugin_repository, PluginLoader())
+            paper_repository = create_paper_repository(db)
+            config_repository = create_config_repository(db)
+            project_plugin_config_repository = create_project_plugin_config_repository(db)
+            
+            # Create CoreAPI instance
+            core_api = CoreAPIImpl(
+                paper_repository=paper_repository,
+                config_repository=config_repository,
+                project_plugin_config_repository=project_plugin_config_repository,
+            )
+            
+            # Create plugin registry with CoreAPI
+            plugin_registry = PluginRegistry(
+                plugin_repository=plugin_repository,
+                plugin_loader=PluginLoader(),
+                core_api=core_api
+            )
             registered = await plugin_registry.discover_and_register_plugins()
             print(f"Auto-discovered and registered {len(registered)} plugins on startup")
         finally:

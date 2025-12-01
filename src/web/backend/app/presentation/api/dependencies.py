@@ -12,6 +12,8 @@ from app.domain.plugin.repositories.plugin_repository import PluginRepository
 from app.domain.plugin.repositories.plugin_execution_repository import PluginExecutionRepository
 from app.domain.project.repositories.project_repository import ProjectRepository
 from app.domain.project.repositories.project_plugin_config_repository import ProjectPluginConfigRepository
+from app.application.plugin.core_api import CoreAPI
+from app.application.plugin.core_api_impl import CoreAPIImpl
 from app.infrastructure.database.repositories import (
     create_paper_repository,
     create_category_repository,
@@ -87,21 +89,6 @@ def get_plugin_execution_repository(db: Session = Depends(get_db)) -> PluginExec
     return create_plugin_execution_repository(db)
 
 
-def get_plugin_registry(
-    plugin_repository: PluginRepository = Depends(get_plugin_repository),
-) -> PluginRegistry:
-    """Get plugin registry."""
-    return PluginRegistry(plugin_repository)
-
-
-def get_plugin_executor(
-    plugin_registry: PluginRegistry = Depends(get_plugin_registry),
-    execution_repository: PluginExecutionRepository = Depends(get_plugin_execution_repository),
-) -> PluginExecutor:
-    """Get plugin executor."""
-    return PluginExecutor(plugin_registry, execution_repository)
-
-
 def get_project_repository(db: Session = Depends(get_db)) -> ProjectRepository:
     """Get project repository (factory selects SQLite or PostgreSQL implementation)."""
     return create_project_repository(db)
@@ -110,4 +97,33 @@ def get_project_repository(db: Session = Depends(get_db)) -> ProjectRepository:
 def get_project_plugin_config_repository(db: Session = Depends(get_db)) -> ProjectPluginConfigRepository:
     """Get project plugin config repository (factory selects SQLite or PostgreSQL implementation)."""
     return create_project_plugin_config_repository(db)
+
+
+def get_core_api(
+    paper_repository: PaperRepository = Depends(get_paper_repository),
+    config_repository: ConfigRepository = Depends(get_config_repository),
+    project_plugin_config_repository: ProjectPluginConfigRepository = Depends(get_project_plugin_config_repository),
+) -> CoreAPI:
+    """Get Core API instance."""
+    return CoreAPIImpl(
+        paper_repository=paper_repository,
+        config_repository=config_repository,
+        project_plugin_config_repository=project_plugin_config_repository,
+    )
+
+
+def get_plugin_registry(
+    plugin_repository: PluginRepository = Depends(get_plugin_repository),
+    core_api: CoreAPI = Depends(get_core_api),
+) -> PluginRegistry:
+    """Get plugin registry with CoreAPI injection."""
+    return PluginRegistry(plugin_repository, PluginLoader(), core_api)
+
+
+def get_plugin_executor(
+    plugin_registry: PluginRegistry = Depends(get_plugin_registry),
+    execution_repository: PluginExecutionRepository = Depends(get_plugin_execution_repository),
+) -> PluginExecutor:
+    """Get plugin executor."""
+    return PluginExecutor(plugin_registry, execution_repository)
 

@@ -6,6 +6,7 @@ from app.domain.plugin.entities.plugin import Plugin
 from app.domain.plugin.repositories.plugin_repository import PluginRepository
 from app.infrastructure.plugin.plugin_loader import PluginLoader
 from app.infrastructure.plugin.base_plugin import BasePlugin
+from app.application.plugin.core_api import CoreAPI
 
 
 class PluginRegistry:
@@ -15,16 +16,30 @@ class PluginRegistry:
         self,
         plugin_repository: PluginRepository,
         plugin_loader: PluginLoader = None,
+        core_api: Optional[CoreAPI] = None,
     ):
         """Initialize plugin registry.
         
         Args:
             plugin_repository: Repository for plugin persistence
             plugin_loader: Plugin loader instance
+            core_api: Core API instance to inject into plugins
         """
         self._plugin_repository = plugin_repository
         self._plugin_loader = plugin_loader or PluginLoader()
+        self._core_api = core_api
         self._plugin_instances: Dict[str, BasePlugin] = {}
+    
+    def _instantiate_plugin_with_api(self, plugin_class) -> BasePlugin:
+        """Instantiate plugin with CoreAPI injection.
+        
+        Args:
+            plugin_class: Plugin class to instantiate
+            
+        Returns:
+            Plugin instance with CoreAPI injected
+        """
+        return self._plugin_loader.instantiate_plugin(plugin_class, self._core_api)
     
     async def discover_and_register_plugins(self) -> list[Plugin]:
         """Discover plugins from filesystem and register them in database.
@@ -37,7 +52,8 @@ class PluginRegistry:
         
         for plugin_class in plugin_classes:
             try:
-                plugin_instance = self._plugin_loader.instantiate_plugin(plugin_class)
+                # Instantiate with CoreAPI injection
+                plugin_instance = self._instantiate_plugin_with_api(plugin_class)
                 
                 # Check if plugin already exists
                 existing = await self._plugin_repository.find_by_name(plugin_instance.name)
@@ -91,7 +107,7 @@ class PluginRegistry:
         # Find plugin class and instantiate
         plugin_classes = self._plugin_loader.discover_plugins()
         for plugin_class in plugin_classes:
-            instance = self._plugin_loader.instantiate_plugin(plugin_class)
+            instance = self._instantiate_plugin_with_api(plugin_class)
             if instance.name == plugin.name:
                 self._plugin_instances[cache_key] = instance
                 return instance

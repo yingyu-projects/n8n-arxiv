@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+always use conda env arxiv-paper to run backend
