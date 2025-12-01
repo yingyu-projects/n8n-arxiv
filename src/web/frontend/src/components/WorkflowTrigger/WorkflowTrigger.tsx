@@ -5,60 +5,45 @@ import styles from './WorkflowTrigger.module.scss';
 
 export default function WorkflowTrigger() {
   const {
-    categories,
-    updateCategory,
-    numPapers,
-    setNumPapers,
+    workflows,
+    selectedWorkflowId,
+    setSelectedWorkflowId,
     loading,
     status,
     error,
     isRunning,
-    addCategory,
-    removeCategory,
     triggerWorkflow,
     stopWorkflow,
   } = useWorkflowTrigger();
+
+  const selectedWorkflow = workflows.find(w => w.id === selectedWorkflowId);
 
   return (
     <div className={styles.workflowTrigger}>
       <h2>Trigger Parsing Workflow</h2>
 
       <div className={styles.formSection}>
-        <label>Categories</label>
-        {categories.map((category, index) => (
-          <div key={index} className={styles.categoryInputGroup}>
-            <input
-              value={category}
-              onChange={(e) => updateCategory(index, e.target.value)}
-              type="text"
-              placeholder="e.g., cs.AI"
-              className={styles.categoryInput}
-            />
-            <button
-              onClick={() => removeCategory(index)}
-              type="button"
-              className={styles.removeBtn}
-              disabled={categories.length === 1}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button onClick={addCategory} type="button" className={styles.addBtn}>
-          Add Category
-        </button>
-      </div>
-
-      <div className={styles.formSection}>
-        <label>Number of Papers</label>
-        <input
-          value={numPapers}
-          onChange={(e) => setNumPapers(Number(e.target.value))}
-          type="number"
-          min="1"
-          max="100"
+        <label>Select Workflow</label>
+        <select
+          value={selectedWorkflowId}
+          onChange={(e) => setSelectedWorkflowId(e.target.value)}
           disabled={isRunning}
-        />
+          className={styles.select}
+        >
+          <option value="">-- Select a workflow --</option>
+          {workflows.map((workflow) => (
+            <option key={workflow.id} value={workflow.id}>
+              {workflow.name} ({workflow.categories.join(', ')}) - {workflow.num_papers} papers
+            </option>
+          ))}
+        </select>
+        {selectedWorkflow && (
+          <div className={styles.workflowInfo}>
+            <p><strong>Description:</strong> {selectedWorkflow.description || 'No description'}</p>
+            <p><strong>Categories:</strong> {selectedWorkflow.categories.join(', ')}</p>
+            <p><strong>Papers per category:</strong> {selectedWorkflow.num_papers}</p>
+          </div>
+        )}
       </div>
 
       <button

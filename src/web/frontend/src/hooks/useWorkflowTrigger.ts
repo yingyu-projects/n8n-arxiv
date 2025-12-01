@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { paperService } from '@/api/paperService';
+import { workflowService } from '@/api/workflowService';
+import { useWorkflows } from './useWorkflows';
 
 export interface WorkflowStatus {
   status: string;
@@ -12,26 +14,13 @@ export interface WorkflowStatus {
 }
 
 export function useWorkflowTrigger() {
-  const [categories, setCategories] = useState<string[]>(['cs.AI', 'cs.CL', 'cs.LG', 'cs.HC', 'cs.CV']);
-  const [numPapers, setNumPapers] = useState(50);
+  const { workflows } = useWorkflows(true); // Only enabled workflows
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<WorkflowStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const addCategory = () => {
-    setCategories([...categories, '']);
-  };
-
-  const removeCategory = (index: number) => {
-    setCategories(categories.filter((_, i) => i !== index));
-  };
-
-  const updateCategory = (index: number, value: string) => {
-    const newCategories = [...categories];
-    newCategories[index] = value;
-    setCategories(newCategories);
-  };
 
   const startPolling = () => {
     // Clear existing interval
@@ -69,12 +58,11 @@ export function useWorkflowTrigger() {
     setStatus(null);
 
     try {
-      const validCategories = categories.filter(cat => cat.trim() !== '');
-      if (validCategories.length === 0) {
-        throw new Error('At least one category is required');
+      if (!selectedWorkflowId) {
+        throw new Error('Please select a workflow');
       }
 
-      await paperService.triggerWorkflow(validCategories, numPapers);
+      await workflowService.triggerWorkflow(selectedWorkflowId);
       
       // Start polling for status updates
       startPolling();
@@ -107,17 +95,13 @@ export function useWorkflowTrigger() {
   const isRunning = status?.status === 'running' || status?.status === 'stopping';
 
   return {
-    categories,
-    setCategories,
-    updateCategory,
-    numPapers,
-    setNumPapers,
+    workflows,
+    selectedWorkflowId,
+    setSelectedWorkflowId,
     loading,
     status,
     error,
     isRunning,
-    addCategory,
-    removeCategory,
     triggerWorkflow,
     stopWorkflow,
   };

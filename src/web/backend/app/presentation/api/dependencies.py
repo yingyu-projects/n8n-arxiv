@@ -6,15 +6,26 @@ from app.infrastructure.database.database import get_db
 from app.domain.paper.repositories.paper_repository import PaperRepository
 from app.domain.category.repositories.category_repository import CategoryRepository
 from app.domain.config.repositories.config_repository import ConfigRepository
+from app.domain.workflow.repositories.workflow_repository import WorkflowRepository
+from app.domain.workflow.repositories.workflow_plugin_config_repository import WorkflowPluginConfigRepository
+from app.domain.plugin.repositories.plugin_repository import PluginRepository
+from app.domain.plugin.repositories.plugin_execution_repository import PluginExecutionRepository
 from app.infrastructure.database.repositories import (
     create_paper_repository,
     create_category_repository,
     create_config_repository,
+    create_workflow_repository,
+    create_workflow_plugin_config_repository,
+    create_plugin_repository,
+    create_plugin_execution_repository,
 )
 from app.infrastructure.external.arxiv_client import ArxivClient
 from app.infrastructure.external.pdf_client import PdfClient
 from app.infrastructure.services.text_cleaner import TextCleaner
 from app.infrastructure.services.config_loader import ConfigLoader
+from app.application.plugin.plugin_registry import PluginRegistry
+from app.application.plugin.plugin_executor import PluginExecutor
+from app.infrastructure.plugin.plugin_loader import PluginLoader
 
 
 def get_paper_repository(db: Session = Depends(get_db)) -> PaperRepository:
@@ -50,4 +61,39 @@ def get_text_cleaner() -> TextCleaner:
 def get_config_loader() -> ConfigLoader:
     """Get config loader."""
     return ConfigLoader()
+
+
+def get_workflow_repository(db: Session = Depends(get_db)) -> WorkflowRepository:
+    """Get workflow repository."""
+    return create_workflow_repository(db)
+
+
+def get_workflow_plugin_config_repository(db: Session = Depends(get_db)) -> WorkflowPluginConfigRepository:
+    """Get workflow plugin config repository."""
+    return create_workflow_plugin_config_repository(db)
+
+
+def get_plugin_repository(db: Session = Depends(get_db)) -> PluginRepository:
+    """Get plugin repository."""
+    return create_plugin_repository(db)
+
+
+def get_plugin_execution_repository(db: Session = Depends(get_db)) -> PluginExecutionRepository:
+    """Get plugin execution repository."""
+    return create_plugin_execution_repository(db)
+
+
+def get_plugin_registry(
+    plugin_repository: PluginRepository = Depends(get_plugin_repository),
+) -> PluginRegistry:
+    """Get plugin registry."""
+    return PluginRegistry(plugin_repository)
+
+
+def get_plugin_executor(
+    plugin_registry: PluginRegistry = Depends(get_plugin_registry),
+    execution_repository: PluginExecutionRepository = Depends(get_plugin_execution_repository),
+) -> PluginExecutor:
+    """Get plugin executor."""
+    return PluginExecutor(plugin_registry, execution_repository)
 
