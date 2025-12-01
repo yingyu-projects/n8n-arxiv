@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useProjectContext } from '@/hooks/useProjectContext';
+import { HiHome, HiDocumentText, HiCog, HiCollection } from 'react-icons/hi';
 import styles from './ProjectSidebar.module.scss';
 
 export default function ProjectSidebar() {
@@ -36,24 +37,28 @@ export default function ProjectSidebar() {
           href={basePath}
           className={`${styles.navItem} ${isDashboardActive ? styles.active : ''}`}
         >
+          <HiHome className={styles.icon} />
           Dashboard
         </Link>
         <Link
           href={`${basePath}/papers`}
           className={`${styles.navItem} ${isActive(`${basePath}/papers`) ? styles.active : ''}`}
         >
+          <HiDocumentText className={styles.icon} />
           Papers
         </Link>
         <Link
           href={`${basePath}/workflows`}
           className={`${styles.navItem} ${isActive(`${basePath}/workflows`) ? styles.active : ''}`}
         >
+          <HiCollection className={styles.icon} />
           Workflows
         </Link>
         <Link
           href={`${basePath}/config`}
           className={`${styles.navItem} ${isActive(`${basePath}/config`) ? styles.active : ''}`}
         >
+          <HiCog className={styles.icon} />
           Config
         </Link>
       </nav>
