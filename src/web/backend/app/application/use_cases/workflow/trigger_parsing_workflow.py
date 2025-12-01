@@ -126,6 +126,7 @@ class TriggerParsingWorkflowUseCase:
                                 title=paper_data["title"],
                                 pdf_link=pdf_link,
                                 category=category,
+                                project_id=workflow.project_id,
                                 arxiv_id=paper_data.get("arxiv_id"),
                             )
                             

@@ -24,13 +24,7 @@ export default function RootLayout({
               </h1>
               <ul className={styles.navLinks}>
                 <li>
-                  <Link href="/">Papers</Link>
-                </li>
-                <li>
-                  <Link href="/workflow">Workflow</Link>
-                </li>
-                <li>
-                  <Link href="/config">Config</Link>
+                  <Link href="/">Home</Link>
                 </li>
               </ul>
             </div>

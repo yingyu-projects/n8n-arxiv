@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaperList } from '@/hooks/usePaperList';
+import { useProjectContext } from '@/hooks/useProjectContext';
 import styles from './PaperList.module.scss';
 
 export default function PaperList() {
   const router = useRouter();
+  const { projectId } = useProjectContext();
   const {
     papers,
     loading,
@@ -15,7 +18,7 @@ export default function PaperList() {
     currentPage,
     pageSize,
     onPageChange,
-  } = usePaperList();
+  } = usePaperList(projectId || undefined);
 
   const goToDetail = (id: string) => {
     router.push(`/papers/${id}`);

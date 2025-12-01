@@ -32,6 +32,7 @@ class PaperMapper:
             arxiv_id=ArxivId(orm.arxiv_id) if orm.arxiv_id else None,
             summary=Summary.from_dict(orm.summary) if orm.summary else None,
             parsed_at=orm.parsed_at,
+            project_id=PaperMapper._ensure_uuid(orm.project_id) if orm.project_id else None,
             created_at=orm.created_at,
         )
     
@@ -44,6 +45,7 @@ class PaperMapper:
             convert_uuid_to_string: If True, convert UUID to string (for SQLite)
         """
         paper_id = str(domain.id) if convert_uuid_to_string else domain.id
+        project_id = str(domain.project_id) if convert_uuid_to_string and domain.project_id else domain.project_id
         
         return PaperORM(
             id=paper_id,
@@ -53,6 +55,7 @@ class PaperMapper:
             category=domain.category,
             summary=domain.summary.to_dict() if domain.summary else None,
             parsed_at=domain.parsed_at,
+            project_id=project_id,
             created_at=domain.created_at,
         )
     
@@ -65,5 +68,6 @@ class PaperMapper:
         orm.category = domain.category
         orm.summary = domain.summary.to_dict() if domain.summary else None
         orm.parsed_at = domain.parsed_at
+        orm.project_id = str(domain.project_id) if isinstance(orm.project_id, str) and domain.project_id else domain.project_id
         orm.created_at = domain.created_at
 

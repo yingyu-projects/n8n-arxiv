@@ -10,6 +10,7 @@ from app.domain.workflow.repositories.workflow_repository import WorkflowReposit
 from app.domain.workflow.repositories.workflow_plugin_config_repository import WorkflowPluginConfigRepository
 from app.domain.plugin.repositories.plugin_repository import PluginRepository
 from app.domain.plugin.repositories.plugin_execution_repository import PluginExecutionRepository
+from app.domain.project.repositories.project_repository import ProjectRepository
 from app.infrastructure.database.repositories import (
     create_paper_repository,
     create_category_repository,
@@ -18,6 +19,7 @@ from app.infrastructure.database.repositories import (
     create_workflow_plugin_config_repository,
     create_plugin_repository,
     create_plugin_execution_repository,
+    create_project_repository,
 )
 from app.infrastructure.external.arxiv_client import ArxivClient
 from app.infrastructure.external.pdf_client import PdfClient
@@ -96,4 +98,9 @@ def get_plugin_executor(
 ) -> PluginExecutor:
     """Get plugin executor."""
     return PluginExecutor(plugin_registry, execution_repository)
+
+
+def get_project_repository(db: Session = Depends(get_db)) -> ProjectRepository:
+    """Get project repository (factory selects SQLite or PostgreSQL implementation)."""
+    return create_project_repository(db)
 

@@ -6,6 +6,7 @@ from app.infrastructure.database.models.workflow_orm import WorkflowORM
 from app.infrastructure.database.models.plugin_orm import PluginORM
 from app.infrastructure.database.models.workflow_plugin_config_orm import WorkflowPluginConfigORM
 from app.infrastructure.database.models.plugin_execution_orm import PluginExecutionORM
+from app.infrastructure.database.models.project_orm import ProjectORM
 
 __all__ = [
     'PaperORM',
@@ -15,4 +16,5 @@ __all__ = [
     'PluginORM',
     'WorkflowPluginConfigORM',
     'PluginExecutionORM',
+    'ProjectORM',
 ]

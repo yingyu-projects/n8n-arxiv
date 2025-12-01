@@ -20,13 +20,14 @@ router = APIRouter()
 @router.get("/papers", response_model=list[PaperListResponse])
 async def list_papers(
     category: Optional[str] = Query(None),
+    project_id: Optional[UUID] = Query(None),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
     paper_repository: PaperRepository = Depends(get_paper_repository),
 ):
     """List papers with optional filtering."""
     use_case = ListPapersUseCase(paper_repository)
-    papers = await use_case.execute(category=category, limit=limit, offset=offset)
+    papers = await use_case.execute(category=category, project_id=project_id, limit=limit, offset=offset)
     
     return [
         PaperListResponse(

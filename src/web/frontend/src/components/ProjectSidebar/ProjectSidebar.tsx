@@ -1,0 +1,63 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useProjectContext } from '@/hooks/useProjectContext';
+import styles from './ProjectSidebar.module.scss';
+
+export default function ProjectSidebar() {
+  const pathname = usePathname();
+  const { projectId, project } = useProjectContext();
+
+  if (!projectId) {
+    return null;
+  }
+
+  const basePath = `/projects/${projectId}`;
+
+  // Dashboard should only be active on exact match
+  const isDashboardActive = pathname === basePath;
+  
+  // Other items should be active on exact match or when pathname starts with their path
+  const isActive = (path: string) => {
+    return pathname === path || pathname?.startsWith(path + '/');
+  };
+
+  return (
+    <div className={styles.sidebar}>
+      <div className={styles.header}>
+        <h2 className={styles.projectName}>{project?.name || 'Project'}</h2>
+        {project?.description && (
+          <p className={styles.projectDescription}>{project.description}</p>
+        )}
+      </div>
+      <nav className={styles.nav}>
+        <Link
+          href={basePath}
+          className={`${styles.navItem} ${isDashboardActive ? styles.active : ''}`}
+        >
+          Dashboard
+        </Link>
+        <Link
+          href={`${basePath}/papers`}
+          className={`${styles.navItem} ${isActive(`${basePath}/papers`) ? styles.active : ''}`}
+        >
+          Papers
+        </Link>
+        <Link
+          href={`${basePath}/workflows`}
+          className={`${styles.navItem} ${isActive(`${basePath}/workflows`) ? styles.active : ''}`}
+        >
+          Workflows
+        </Link>
+        <Link
+          href={`${basePath}/config`}
+          className={`${styles.navItem} ${isActive(`${basePath}/config`) ? styles.active : ''}`}
+        >
+          Config
+        </Link>
+      </nav>
+    </div>
+  );
+}
+

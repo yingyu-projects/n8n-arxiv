@@ -1,5 +1,6 @@
 """Create workflow use case."""
 from typing import List, Optional
+from uuid import UUID
 
 from app.domain.workflow.repositories.workflow_repository import WorkflowRepository
 from app.domain.workflow.entities.workflow import Workflow
@@ -17,6 +18,7 @@ class CreateWorkflowUseCase:
         self,
         name: str,
         categories: List[str],
+        project_id: UUID,
         num_papers: int = 50,
         description: Optional[str] = None,
     ) -> WorkflowDTO:
@@ -25,6 +27,7 @@ class CreateWorkflowUseCase:
         Args:
             name: Workflow name
             categories: List of arXiv categories
+            project_id: Project ID
             num_papers: Number of papers per category
             description: Optional workflow description
             
@@ -39,6 +42,7 @@ class CreateWorkflowUseCase:
         workflow = Workflow.create(
             name=name,
             categories=categories,
+            project_id=project_id,
             num_papers=num_papers,
             description=description,
         )

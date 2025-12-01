@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkflows } from '@/hooks/useWorkflows';
+import { useProjectContext } from '@/hooks/useProjectContext';
 import { workflowService } from '@/api/workflowService';
 import styles from './WorkflowManager.module.scss';
 
 export default function WorkflowManager() {
   const router = useRouter();
-  const { workflows, loading, error, reload } = useWorkflows();
+  const { projectId } = useProjectContext();
+  const { workflows, loading, error, reload } = useWorkflows(false, projectId || undefined);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,6 +21,10 @@ export default function WorkflowManager() {
   });
 
   const handleCreate = async () => {
+    if (!projectId) {
+      alert('Project ID is required');
+      return;
+    }
     setCreating(true);
     try {
       const categories = formData.categories.filter(c => c.trim() !== '');
@@ -27,6 +33,7 @@ export default function WorkflowManager() {
         description: formData.description || undefined,
         categories,
         num_papers: formData.num_papers,
+        project_id: projectId,
       });
       setShowCreateForm(false);
       setFormData({ name: '', description: '', categories: [''], num_papers: 50 });
@@ -68,6 +75,10 @@ export default function WorkflowManager() {
           {showCreateForm ? 'Cancel' : 'Create Workflow'}
         </button>
       </div>
+
+      {!projectId && (
+        <div className={styles.error}>Project ID is required. Please navigate to a project first.</div>
+      )}
 
       {showCreateForm && (
         <div className={styles.createForm}>
@@ -117,7 +128,7 @@ export default function WorkflowManager() {
             min="1"
             max="100"
           />
-          <button onClick={handleCreate} disabled={creating} className={styles.submitButton}>
+          <button onClick={handleCreate} disabled={creating || !projectId} className={styles.submitButton}>
             {creating ? 'Creating...' : 'Create'}
           </button>
         </div>

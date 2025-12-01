@@ -8,10 +8,12 @@ import type {
 } from '@/types/workflow';
 
 export const workflowService = {
-  async getWorkflows(enabledOnly: boolean = false): Promise<Workflow[]> {
-    const response = await api.get('/workflows', {
-      params: { enabled_only: enabledOnly },
-    });
+  async getWorkflows(enabledOnly: boolean = false, projectId?: string): Promise<Workflow[]> {
+    const params: any = { enabled_only: enabledOnly };
+    if (projectId) {
+      params.project_id = projectId;
+    }
+    const response = await api.get('/workflows', { params });
     return response.data;
   },
 

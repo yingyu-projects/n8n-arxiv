@@ -1,6 +1,6 @@
-import WorkflowManager from '@/components/WorkflowManager/WorkflowManager';
+import { redirect } from 'next/navigation';
 
 export default function WorkflowsPage() {
-  return <WorkflowManager />;
+  redirect('/');
 }
 

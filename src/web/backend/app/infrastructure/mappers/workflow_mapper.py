@@ -26,6 +26,7 @@ class WorkflowMapper:
             categories=orm.categories or [],
             num_papers=orm.num_papers,
             enabled=orm.enabled,
+            project_id=WorkflowMapper._ensure_uuid(orm.project_id) if orm.project_id else None,
             created_at=orm.created_at,
             updated_at=orm.updated_at,
         )
@@ -39,6 +40,7 @@ class WorkflowMapper:
             convert_uuid_to_string: If True, convert UUID to string (for SQLite)
         """
         workflow_id = str(domain.id) if convert_uuid_to_string else domain.id
+        project_id = str(domain.project_id) if convert_uuid_to_string and domain.project_id else domain.project_id
         
         return WorkflowORM(
             id=workflow_id,
@@ -47,6 +49,7 @@ class WorkflowMapper:
             categories=domain.categories,
             num_papers=domain.num_papers,
             enabled=domain.enabled,
+            project_id=project_id,
             created_at=domain.created_at,
             updated_at=domain.updated_at,
         )
@@ -59,5 +62,6 @@ class WorkflowMapper:
         orm.categories = domain.categories
         orm.num_papers = domain.num_papers
         orm.enabled = domain.enabled
+        orm.project_id = str(domain.project_id) if isinstance(orm.project_id, str) and domain.project_id else domain.project_id
         orm.updated_at = domain.updated_at
 

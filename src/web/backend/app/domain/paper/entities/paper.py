@@ -20,6 +20,7 @@ class Paper:
     arxiv_id: Optional[ArxivId]
     summary: Optional[Summary]
     parsed_at: Optional[datetime]
+    project_id: Optional[UUID]
     created_at: datetime
     
     def __post_init__(self):
@@ -35,6 +36,7 @@ class Paper:
         title: str,
         pdf_link: str,
         category: str,
+        project_id: Optional[UUID],
         arxiv_id: Optional[str] = None,
     ) -> "Paper":
         """Factory method to create a new paper."""
@@ -46,6 +48,7 @@ class Paper:
             arxiv_id=ArxivId(arxiv_id) if arxiv_id else None,
             summary=None,
             parsed_at=None,
+            project_id=project_id,
             created_at=datetime.utcnow(),
         )
     

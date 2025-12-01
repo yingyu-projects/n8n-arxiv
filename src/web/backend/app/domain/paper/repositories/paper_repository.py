@@ -28,6 +28,7 @@ class PaperRepository(ABC):
     async def find_all(
         self,
         category: Optional[str] = None,
+        project_id: Optional[UUID] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[Paper]:

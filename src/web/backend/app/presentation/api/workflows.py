@@ -1,6 +1,6 @@
 """Workflows API routes."""
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from uuid import UUID
 
 from app.presentation.schemas.workflow_schema import (
@@ -54,11 +54,12 @@ router = APIRouter()
 @router.get("/workflows", response_model=List[WorkflowResponse])
 async def list_workflows(
     enabled_only: bool = False,
+    project_id: Optional[UUID] = None,
     workflow_repository: WorkflowRepository = Depends(get_workflow_repository),
 ):
     """List all workflows."""
     use_case = GetWorkflowsUseCase(workflow_repository)
-    workflows = await use_case.execute(enabled_only=enabled_only)
+    workflows = await use_case.execute(enabled_only=enabled_only, project_id=project_id)
     return [WorkflowResponse.from_dto(w) for w in workflows]
 
 
@@ -88,6 +89,7 @@ async def create_workflow(
         workflow = await use_case.execute(
             name=request.name,
             categories=request.categories,
+            project_id=request.project_id,
             num_papers=request.num_papers,
             description=request.description,
         )

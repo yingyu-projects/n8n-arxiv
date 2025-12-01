@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.presentation.api import papers, categories, workflow, config, workflows, plugins
+from app.presentation.api import papers, categories, workflow, config, workflows, plugins, projects
 from app.infrastructure.database.database import SessionLocal
 from app.infrastructure.database.repositories import (
     create_plugin_repository,
@@ -56,6 +56,7 @@ app.include_router(workflow.router, prefix=settings.api_prefix, tags=["workflow"
 app.include_router(config.router, prefix=settings.api_prefix, tags=["config"])
 app.include_router(workflows.router, prefix=settings.api_prefix, tags=["workflows"])
 app.include_router(plugins.router, prefix=settings.api_prefix, tags=["plugins"])
+app.include_router(projects.router, prefix=settings.api_prefix, tags=["projects"])
 
 
 @app.get("/")

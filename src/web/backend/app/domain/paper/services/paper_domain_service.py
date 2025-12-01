@@ -1,5 +1,6 @@
 """Paper domain service."""
 from typing import Optional
+from uuid import UUID
 from app.domain.paper.entities.paper import Paper
 from app.domain.paper.repositories.paper_repository import PaperRepository
 
@@ -21,6 +22,7 @@ class PaperDomainService:
         title: str,
         pdf_link: str,
         category: str,
+        project_id: UUID,
         arxiv_id: Optional[str] = None,
     ) -> tuple[Paper, bool]:
         """Get existing paper or create new one. Returns (paper, is_new)."""
@@ -33,6 +35,7 @@ class PaperDomainService:
             title=title,
             pdf_link=pdf_link,
             category=category,
+            project_id=project_id,
             arxiv_id=arxiv_id,
         )
         

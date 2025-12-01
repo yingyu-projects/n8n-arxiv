@@ -13,7 +13,7 @@ from app.infrastructure.database.database import Base
 from app.config import settings
 
 # Import all ORM models
-from app.infrastructure.database.models import paper_orm, category_orm
+from app.infrastructure.database.models import paper_orm, category_orm, project_orm
 
 # this is the Alembic Config object
 config = context.config

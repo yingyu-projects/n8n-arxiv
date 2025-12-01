@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { paperService } from '@/api/paperService';
 import type { PaperList as PaperListType } from '@/types/paper';
 
-export function usePaperList() {
+export function usePaperList(projectId?: string) {
   const [papers, setPapers] = useState<PaperListType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +18,7 @@ export function usePaperList() {
       const offset = (currentPage - 1) * pageSize;
       const data = await paperService.getPapers(
         selectedCategory || undefined,
+        projectId,
         pageSize,
         offset
       );
@@ -42,7 +43,7 @@ export function usePaperList() {
 
   useEffect(() => {
     loadPapers();
-  }, [currentPage, selectedCategory]);
+  }, [currentPage, selectedCategory, projectId]);
 
   return {
     papers,

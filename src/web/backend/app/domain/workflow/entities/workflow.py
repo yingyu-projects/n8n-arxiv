@@ -15,6 +15,7 @@ class Workflow:
     categories: List[str]
     num_papers: int
     enabled: bool
+    project_id: Optional[UUID]
     created_at: datetime
     updated_at: datetime
     
@@ -32,6 +33,7 @@ class Workflow:
         cls,
         name: str,
         categories: List[str],
+        project_id: Optional[UUID],
         num_papers: int = 50,
         description: Optional[str] = None,
     ) -> "Workflow":
@@ -44,6 +46,7 @@ class Workflow:
             categories=categories,
             num_papers=num_papers,
             enabled=True,
+            project_id=project_id,
             created_at=now,
             updated_at=now,
         )

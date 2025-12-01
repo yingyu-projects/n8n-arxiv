@@ -17,6 +17,8 @@ from app.infrastructure.database.repositories.plugin_repository_sqlite import Pl
 from app.infrastructure.database.repositories.plugin_repository_postgres import PluginRepositoryPostgres
 from app.infrastructure.database.repositories.plugin_execution_repository_sqlite import PluginExecutionRepositorySQLite
 from app.infrastructure.database.repositories.plugin_execution_repository_postgres import PluginExecutionRepositoryPostgres
+from app.infrastructure.database.repositories.project_repository_sqlite import ProjectRepositorySQLite
+from app.infrastructure.database.repositories.project_repository_postgres import ProjectRepositoryPostgres
 
 # Import repository interfaces
 from app.domain.paper.repositories.paper_repository import PaperRepository
@@ -26,6 +28,7 @@ from app.domain.workflow.repositories.workflow_repository import WorkflowReposit
 from app.domain.workflow.repositories.workflow_plugin_config_repository import WorkflowPluginConfigRepository
 from app.domain.plugin.repositories.plugin_repository import PluginRepository
 from app.domain.plugin.repositories.plugin_execution_repository import PluginExecutionRepository
+from app.domain.project.repositories.project_repository import ProjectRepository
 
 
 def create_paper_repository(session: Session) -> PaperRepository:
@@ -115,5 +118,18 @@ def create_plugin_execution_repository(session: Session) -> PluginExecutionRepos
         return PluginExecutionRepositorySQLite(session)
     elif settings.database_type == "postgresql":
         return PluginExecutionRepositoryPostgres(session)
+    else:
+        raise ValueError(f"Unsupported database type: {settings.database_type}. Must be 'sqlite' or 'postgresql'.")
+
+
+def create_project_repository(session: Session) -> ProjectRepository:
+    """Factory function to create the appropriate project repository implementation.
+    
+    Uses the database type from configuration to select the correct implementation.
+    """
+    if settings.database_type == "sqlite":
+        return ProjectRepositorySQLite(session)
+    elif settings.database_type == "postgresql":
+        return ProjectRepositoryPostgres(session)
     else:
         raise ValueError(f"Unsupported database type: {settings.database_type}. Must be 'sqlite' or 'postgresql'.")

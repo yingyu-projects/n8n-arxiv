@@ -1,5 +1,5 @@
-import PaperList from '@/components/PaperList/PaperList';
+import ProjectManager from '@/components/ProjectManager/ProjectManager';
 
 export default function Home() {
-  return <PaperList />;
+  return <ProjectManager />;
 }

@@ -25,7 +25,7 @@ class WorkflowRepository(ABC):
         pass
     
     @abstractmethod
-    async def find_all(self, enabled_only: bool = False) -> List[Workflow]:
+    async def find_all(self, enabled_only: bool = False, project_id: Optional[UUID] = None) -> List[Workflow]:
         """Find all workflows."""
         pass
     

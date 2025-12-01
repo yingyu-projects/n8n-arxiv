@@ -1,5 +1,6 @@
 """List papers use case."""
 from typing import List, Optional
+from uuid import UUID
 
 from app.domain.paper.repositories.paper_repository import PaperRepository
 from app.application.dto.paper_dto import PaperListDTO
@@ -15,12 +16,14 @@ class ListPapersUseCase:
     async def execute(
         self,
         category: Optional[str] = None,
+        project_id: Optional[UUID] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[PaperListDTO]:
         """Execute use case."""
         papers = await self._paper_repository.find_all(
             category=category,
+            project_id=project_id,
             limit=limit,
             offset=offset,
         )

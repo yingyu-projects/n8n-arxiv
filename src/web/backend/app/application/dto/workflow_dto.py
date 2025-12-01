@@ -17,6 +17,7 @@ class WorkflowDTO:
     categories: List[str]
     num_papers: int
     enabled: bool
+    project_id: Optional[UUID]
     created_at: datetime
     updated_at: datetime
     
@@ -30,6 +31,7 @@ class WorkflowDTO:
             categories=workflow.categories,
             num_papers=workflow.num_papers,
             enabled=workflow.enabled,
+            project_id=workflow.project_id,
             created_at=workflow.created_at,
             updated_at=workflow.updated_at,
         )

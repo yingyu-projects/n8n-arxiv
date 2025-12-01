@@ -5,6 +5,7 @@ export interface Workflow {
   categories: string[];
   num_papers: number;
   enabled: boolean;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +30,7 @@ export interface CreateWorkflowRequest {
   categories: string[];
   num_papers: number;
   description?: string;
+  project_id: string | null;
 }
 
 export interface UpdateWorkflowRequest {

@@ -1,6 +1,6 @@
-import Config from '@/components/Config/Config';
+import { redirect } from 'next/navigation';
 
 export default function ConfigPage() {
-  return <Config />;
+  redirect('/');
 }
 

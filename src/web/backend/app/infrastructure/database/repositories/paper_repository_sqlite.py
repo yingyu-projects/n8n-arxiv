@@ -58,6 +58,7 @@ class PaperRepositorySQLite(PaperRepository):
     async def find_all(
         self,
         category: Optional[str] = None,
+        project_id: Optional[UUID] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[Paper]:
@@ -66,6 +67,9 @@ class PaperRepositorySQLite(PaperRepository):
         
         if category:
             query = query.filter(PaperORM.category == category)
+        
+        if project_id is not None:
+            query = query.filter(PaperORM.project_id == str(project_id))
         
         query = query.order_by(PaperORM.created_at.desc())
         query = query.limit(limit).offset(offset)

@@ -2,10 +2,13 @@ import api from './api';
 import type { Paper, PaperList } from '@/types/paper';
 
 export const paperService = {
-  async getPapers(category?: string, limit = 50, offset = 0): Promise<PaperList[]> {
+  async getPapers(category?: string, projectId?: string, limit = 50, offset = 0): Promise<PaperList[]> {
     const params: Record<string, any> = { limit, offset };
     if (category) {
       params.category = category;
+    }
+    if (projectId) {
+      params.project_id = projectId;
     }
     const response = await api.get<PaperList[]>('/papers', { params });
     return response.data;

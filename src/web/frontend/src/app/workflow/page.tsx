@@ -1,6 +1,6 @@
-import WorkflowTrigger from '@/components/WorkflowTrigger/WorkflowTrigger';
+import { redirect } from 'next/navigation';
 
 export default function WorkflowPage() {
-  return <WorkflowTrigger />;
+  redirect('/');
 }
 

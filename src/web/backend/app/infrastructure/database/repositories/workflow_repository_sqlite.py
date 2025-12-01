@@ -52,12 +52,16 @@ class WorkflowRepositorySQLite(WorkflowRepository):
         
         return WorkflowMapper.to_domain(orm) if orm else None
     
-    async def find_all(self, enabled_only: bool = False) -> List[Workflow]:
+    async def find_all(self, enabled_only: bool = False, project_id: Optional[UUID] = None) -> List[Workflow]:
         """Find all workflows."""
+        from uuid import UUID as UUIDType
         query = self._session.query(WorkflowORM)
         
         if enabled_only:
             query = query.filter(WorkflowORM.enabled == True)
+        
+        if project_id is not None:
+            query = query.filter(WorkflowORM.project_id == str(project_id))
         
         query = query.order_by(WorkflowORM.created_at.desc())
         orms = query.all()

@@ -1,9 +1,11 @@
 'use client';
 
 import { useConfig } from '@/hooks/useConfig';
+import { useProjectContext } from '@/hooks/useProjectContext';
 import styles from './Config.module.scss';
 
 export default function Config() {
+  const { projectId } = useProjectContext();
   const {
     categories,
     newCategories,

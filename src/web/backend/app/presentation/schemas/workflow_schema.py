@@ -41,6 +41,7 @@ class CreateWorkflowRequest(BaseModel):
     categories: List[str] = Field(..., min_items=1)
     num_papers: int = Field(default=50, ge=1, le=100)
     description: Optional[str] = None
+    project_id: Optional[UUID] = None
 
 
 class UpdateWorkflowRequest(BaseModel):
@@ -62,6 +63,7 @@ class WorkflowResponse(BaseModel):
     categories: List[str]
     num_papers: int
     enabled: bool
+    project_id: Optional[UUID]
     created_at: datetime
     updated_at: datetime
     
@@ -75,6 +77,7 @@ class WorkflowResponse(BaseModel):
             categories=dto.categories,
             num_papers=dto.num_papers,
             enabled=dto.enabled,
+            project_id=dto.project_id,
             created_at=dto.created_at,
             updated_at=dto.updated_at,
         )
