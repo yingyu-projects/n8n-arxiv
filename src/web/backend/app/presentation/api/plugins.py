@@ -6,9 +6,11 @@ from uuid import UUID
 from app.presentation.schemas.plugin_schema import (
     PluginResponse,
     PluginConfigSchemaResponse,
+    UpdatePluginRequest,
 )
 from app.application.plugin.use_cases.get_plugins import GetPluginsUseCase
 from app.application.plugin.use_cases.get_plugin_config_schema import GetPluginConfigSchemaUseCase
+from app.application.plugin.use_cases.update_plugin import UpdatePluginUseCase
 from app.application.plugin.plugin_registry import PluginRegistry
 from app.presentation.api.dependencies import (
     get_plugin_repository,
@@ -77,6 +79,25 @@ async def get_plugin_config_schema(
         raise HTTPException(status_code=404, detail=f"Plugin with ID {plugin_id} not found")
     
     return PluginConfigSchemaResponse(schema=schema)
+
+
+@router.put("/plugins/{plugin_id}", response_model=PluginResponse)
+async def update_plugin(
+    plugin_id: UUID,
+    request: UpdatePluginRequest,
+    plugin_repository: PluginRepository = Depends(get_plugin_repository),
+):
+    """Update plugin (enable/disable)."""
+    use_case = UpdatePluginUseCase(plugin_repository)
+    
+    try:
+        plugin_dto = await use_case.execute(
+            plugin_id=plugin_id,
+            enabled=request.enabled,
+        )
+        return PluginResponse.from_dto(plugin_dto)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/plugins/discover", response_model=Dict[str, Any])

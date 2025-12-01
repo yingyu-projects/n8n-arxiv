@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useProjectContext } from '@/hooks/useProjectContext';
-import { HiHome, HiDocumentText, HiCog, HiCollection } from 'react-icons/hi';
+import { HiHome, HiDocumentText, HiCog, HiCollection, HiPuzzle } from 'react-icons/hi';
 import styles from './ProjectSidebar.module.scss';
 
 export default function ProjectSidebar() {
@@ -55,8 +55,16 @@ export default function ProjectSidebar() {
           Workflows
         </Link>
         <Link
+          href={`${basePath}/extensions`}
+          className={`${styles.navItem} ${isActive(`${basePath}/extensions`) ? styles.active : ''}`}
+        >
+          <HiPuzzle className={styles.icon} />
+          Extensions
+        </Link>
+        <div className={styles.spacer}></div>
+        <Link
           href={`${basePath}/config`}
-          className={`${styles.navItem} ${isActive(`${basePath}/config`) ? styles.active : ''}`}
+          className={`${styles.navItem} ${styles.configItem} ${isActive(`${basePath}/config`) ? styles.active : ''}`}
         >
           <HiCog className={styles.icon} />
           Config

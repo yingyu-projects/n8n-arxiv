@@ -1,5 +1,6 @@
 import api from './api';
 import type { Project } from '@/types/project';
+import type { ProjectPluginConfig } from '@/types/plugin';
 
 export interface CreateProjectRequest {
   name: string;
@@ -34,6 +35,37 @@ export const projectService = {
 
   async deleteProject(id: string): Promise<void> {
     await api.delete(`/projects/${id}`);
+  },
+
+  async getProjectPluginConfigs(projectId: string): Promise<ProjectPluginConfig[]> {
+    const response = await api.get(`/projects/${projectId}/plugin-configs`);
+    return response.data;
+  },
+
+  async getProjectPluginConfig(
+    projectId: string,
+    pluginId: string
+  ): Promise<ProjectPluginConfig | null> {
+    try {
+      const response = await api.get(`/projects/${projectId}/plugin-configs/${pluginId}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  async updateProjectPluginConfig(
+    projectId: string,
+    pluginId: string,
+    config: Record<string, any>
+  ): Promise<ProjectPluginConfig> {
+    const response = await api.put(`/projects/${projectId}/plugin-configs/${pluginId}`, {
+      config,
+    });
+    return response.data;
   },
 };
 

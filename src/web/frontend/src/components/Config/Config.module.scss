@@ -143,6 +143,12 @@
     }
   }
   
+  .extensionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   .error {
     margin-top: 1rem;
     padding: 1rem;

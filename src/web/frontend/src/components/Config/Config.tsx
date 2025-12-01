@@ -2,6 +2,9 @@
 
 import { useConfig } from '@/hooks/useConfig';
 import { useProjectContext } from '@/hooks/useProjectContext';
+import { usePlugins } from '@/hooks/usePlugins';
+import { useProjectPluginConfig } from '@/hooks/useProjectPluginConfig';
+import ExtensionConfigSection from '@/components/ExtensionConfigSection/ExtensionConfigSection';
 import styles from './Config.module.scss';
 
 export default function Config() {
@@ -21,6 +24,12 @@ export default function Config() {
     addCategory,
     removeCategory,
   } = useConfig();
+  
+  // Load enabled plugins
+  const { plugins: enabledPlugins, loading: pluginsLoading } = usePlugins(undefined, true);
+  
+  // Load project plugin configs
+  const { getConfig, saveConfig, isSaving, error: configError } = useProjectPluginConfig(projectId);
 
   return (
     <div className={styles.config}>
@@ -103,6 +112,33 @@ export default function Config() {
       </div>
 
       {error && <div className={styles.error}>{error}</div>}
+
+      {enabledPlugins.length > 0 && (
+        <div className={styles.section}>
+          <h3>Extension Configurations</h3>
+          {pluginsLoading ? (
+            <div>Loading extensions...</div>
+          ) : (
+            <div className={styles.extensionsList}>
+              {enabledPlugins.map((plugin) => {
+                const pluginConfig = getConfig(plugin.id);
+                return (
+                  <ExtensionConfigSection
+                    key={plugin.id}
+                    plugin={plugin}
+                    initialConfig={pluginConfig || {}}
+                    onSave={async (config) => {
+                      await saveConfig(plugin.id, config);
+                    }}
+                    saving={isSaving(plugin.id)}
+                    error={configError}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

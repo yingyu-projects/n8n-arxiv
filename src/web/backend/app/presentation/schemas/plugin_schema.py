@@ -35,3 +35,9 @@ class PluginConfigSchemaResponse(BaseModel):
     
     schema: Dict[str, Any]
 
+
+class UpdatePluginRequest(BaseModel):
+    """Update plugin request schema."""
+    
+    enabled: bool = None
+

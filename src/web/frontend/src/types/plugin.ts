@@ -14,3 +14,12 @@ export interface PluginConfigSchema {
   schema: Record<string, any>;
 }
 
+export interface ProjectPluginConfig {
+  id: string;
+  project_id: string;
+  plugin_id: string;
+  config: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+

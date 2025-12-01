@@ -24,11 +24,34 @@ export function usePlugins(pluginType?: PluginType, enabledOnly: boolean = false
     loadPlugins();
   }, [pluginType, enabledOnly]);
 
+  const updatePlugin = async (id: string, enabled: boolean) => {
+    try {
+      const updated = await pluginService.updatePlugin(id, { enabled });
+      setPlugins(prev => prev.map(p => p.id === id ? updated : p));
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update plugin');
+      throw err;
+    }
+  };
+
+  const discoverPlugins = async () => {
+    try {
+      await pluginService.discoverPlugins();
+      await loadPlugins();
+    } catch (err: any) {
+      setError(err.message || 'Failed to discover plugins');
+      throw err;
+    }
+  };
+
   return {
     plugins,
     loading,
     error,
     reload: loadPlugins,
+    updatePlugin,
+    discoverPlugins,
   };
 }
 
